@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import de.pierrelaub.pace_rechner.data.SettingsRepository
 import de.pierrelaub.pace_rechner.types.DistanceUnit
 import de.pierrelaub.pace_rechner.types.PaceType
 import de.pierrelaub.pace_rechner.types.PaceUnit
@@ -27,7 +28,7 @@ import kotlin.math.round
 fun PaceRechner(
     modifier: Modifier = Modifier
 ) {
-    // State variables for all the data - initialized with Langdistanz (ld) values
+    // State variables for all the data - initialized based on settings
     var dayTimeStart by remember { mutableStateOf(25200) } // 07:00:00 in seconds
     var swimDistance by remember { mutableStateOf(3800.0) }
     var swimTime by remember { mutableStateOf(4560) }
@@ -39,48 +40,12 @@ fun PaceRechner(
     var runTime by remember { mutableStateOf(16034) }
     var runPace by remember { mutableStateOf(380) }
     var t1Time by remember { mutableStateOf(120) } // 2 minutes
-    var t2Time by remember { mutableStateOf(120) } // 1.5 minutes
+    var t2Time by remember { mutableStateOf(90) } // 1.5 minutes
 
     var preset by remember { mutableStateOf("") }
     var presetExpanded by remember { mutableStateOf(false) }
 
-    val presetOptions = listOf(
-        "" to "Vorlagen",
-        "sprint" to "Sprint",
-        "olympic" to "Olympisch",
-        "md" to "Mitteldistanz",
-        "ld" to "Langdistanz"
-    )
-
-    // Calculated values
-    val totalTime = swimTime + t1Time + bikeTime + t2Time + runTime
-    val swimCumulativeTime = swimTime
-    val t1CumulativeTime = swimTime + t1Time
-    val bikeCumulativeTime = swimTime + t1Time + bikeTime
-    val t2CumulativeTime = swimTime + t1Time + bikeTime + t2Time
-
-    // Time calculations for splits
-    val bikeQuarter1Km = bikeDistance * 0.25
-    val bikeHalfKm = bikeDistance * 0.5
-    val bikeThreeQuarterKm = bikeDistance * 0.75
-    val runQuarter1Km = runDistance * 0.25 / 1000.0
-    val runHalfKm = runDistance * 0.5 / 1000.0
-    val runThreeQuarterKm = runDistance * 0.75 / 1000.0
-
-    val bike25Time = (bikeTime * 0.25).toInt()
-    val bike50Time = (bikeTime * 0.5).toInt()
-    val bike75Time = (bikeTime * 0.75).toInt()
-    val run25Time = (runTime * 0.25).toInt()
-    val run50Time = (runTime * 0.5).toInt()
-    val run75Time = (runTime * 0.75).toInt()
-
-    // Clock times
-    val totalTimeAfterSwim = dayTimeStart + swimCumulativeTime
-    val timeAfterT1 = dayTimeStart + t1CumulativeTime
-    val totalTimeAfterBike = dayTimeStart + bikeCumulativeTime
-    val timeAfterT2 = dayTimeStart + t2CumulativeTime
-    val dayTimeFinish = dayTimeStart + totalTime
-
+    // Define handlePresetChange function before using it
     fun handlePresetChange(selectedPreset: String) {
         when (selectedPreset) {
             "sprint" -> {
@@ -137,6 +102,49 @@ fun PaceRechner(
             }
         }
     }
+
+    // Load default distance setting on first composition
+    LaunchedEffect(Unit) {
+        val defaultDistance = SettingsRepository.getDefaultDistance()
+        handlePresetChange(defaultDistance)
+    }
+
+    val presetOptions = listOf(
+        "" to "Vorlagen",
+        "sprint" to "Sprint",
+        "olympic" to "Olympisch",
+        "md" to "Mitteldistanz",
+        "ld" to "Langdistanz"
+    )
+
+    // Calculated values
+    val totalTime = swimTime + t1Time + bikeTime + t2Time + runTime
+    val swimCumulativeTime = swimTime
+    val t1CumulativeTime = swimTime + t1Time
+    val bikeCumulativeTime = swimTime + t1Time + bikeTime
+    val t2CumulativeTime = swimTime + t1Time + bikeTime + t2Time
+
+    // Time calculations for splits
+    val bikeQuarter1Km = bikeDistance * 0.25
+    val bikeHalfKm = bikeDistance * 0.5
+    val bikeThreeQuarterKm = bikeDistance * 0.75
+    val runQuarter1Km = runDistance * 0.25 / 1000.0
+    val runHalfKm = runDistance * 0.5 / 1000.0
+    val runThreeQuarterKm = runDistance * 0.75 / 1000.0
+
+    val bike25Time = (bikeTime * 0.25).toInt()
+    val bike50Time = (bikeTime * 0.5).toInt()
+    val bike75Time = (bikeTime * 0.75).toInt()
+    val run25Time = (runTime * 0.25).toInt()
+    val run50Time = (runTime * 0.5).toInt()
+    val run75Time = (runTime * 0.75).toInt()
+
+    // Clock times
+    val totalTimeAfterSwim = dayTimeStart + swimCumulativeTime
+    val timeAfterT1 = dayTimeStart + t1CumulativeTime
+    val totalTimeAfterBike = dayTimeStart + bikeCumulativeTime
+    val timeAfterT2 = dayTimeStart + t2CumulativeTime
+    val dayTimeFinish = dayTimeStart + totalTime
 
     // Use LazyColumn to fix the scrolling issue
     LazyColumn(
