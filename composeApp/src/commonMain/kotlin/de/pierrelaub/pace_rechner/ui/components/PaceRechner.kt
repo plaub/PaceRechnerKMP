@@ -165,45 +165,110 @@ fun PaceRechner(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column {
-                        ExposedDropdownMenuBox(
-                            expanded = presetExpanded,
-                            onExpandedChange = { presetExpanded = it }
-                        ) {
-                            OutlinedTextField(
-                                value = presetOptions.find { it.first == preset }?.second ?: "Vorlagen",
-                                onValueChange = {},
-                                readOnly = true,
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = presetExpanded) },
-                                modifier = Modifier
-                                    .menuAnchor()
-                                    .width(150.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                                )
+                    ExposedDropdownMenuBox(
+                        expanded = presetExpanded,
+                        onExpandedChange = { presetExpanded = it }
+                    ) {
+                        OutlinedTextField(
+                            value = presetOptions.find { it.first == preset }?.second ?: "Vorlagen",
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = presetExpanded) },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .width(150.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
                             )
-                            ExposedDropdownMenu(
-                                expanded = presetExpanded,
-                                onDismissRequest = { presetExpanded = false }
-                            ) {
-                                presetOptions.forEach { (value, label) ->
-                                    DropdownMenuItem(
-                                        text = { Text(label) },
-                                        onClick = {
-                                            preset = value
-                                            presetExpanded = false
-                                            if (value.isNotEmpty()) {
-                                                handlePresetChange(value)
-                                            }
+                        )
+                        ExposedDropdownMenu(
+                            expanded = presetExpanded,
+                            onDismissRequest = { presetExpanded = false }
+                        ) {
+                            presetOptions.forEach { (value, label) ->
+                                DropdownMenuItem(
+                                    text = { Text(label) },
+                                    onClick = {
+                                        preset = value
+                                        presetExpanded = false
+                                        if (value.isNotEmpty()) {
+                                            handlePresetChange(value)
                                         }
-                                    )
-                                }
+                                    }
+                                )
                             }
                         }
+                    }
+
+                    // Save Button
+                    var showSaveDialog by remember { mutableStateOf(false) }
+                    var saveName by remember { mutableStateOf("") }
+
+                    Button(
+                        onClick = {
+                            saveName = ""
+                            showSaveDialog = true
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text("💾 Speichern")
+                    }
+
+                    // Save Dialog
+                    if (showSaveDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showSaveDialog = false },
+                            title = { Text("Berechnung speichern") },
+                            text = {
+                                OutlinedTextField(
+                                    value = saveName,
+                                    onValueChange = { saveName = it },
+                                    label = { Text("Name eingeben") },
+                                    placeholder = { Text("z.B. Ironman Training") },
+                                    singleLine = true
+                                )
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        if (saveName.isNotBlank()) {
+                                            de.pierrelaub.pace_rechner.data.HistoryRepository.saveCalculation(
+                                                name = saveName,
+                                                swimDistance = swimDistance,
+                                                swimTime = swimTime,
+                                                swimPace = swimPace,
+                                                bikeDistance = bikeDistance,
+                                                bikeTime = bikeTime,
+                                                bikeSpeed = bikeSpeed,
+                                                runDistance = runDistance,
+                                                runTime = runTime,
+                                                runPace = runPace,
+                                                t1Time = t1Time,
+                                                t2Time = t2Time,
+                                                dayTimeStart = dayTimeStart,
+                                                presetType = preset
+                                            )
+                                            showSaveDialog = false
+                                        }
+                                    },
+                                    enabled = saveName.isNotBlank()
+                                ) {
+                                    Text("Speichern")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showSaveDialog = false }) {
+                                    Text("Abbrechen")
+                                }
+                            }
+                        )
                     }
                 }
             }

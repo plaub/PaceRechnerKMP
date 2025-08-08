@@ -11,5 +11,6 @@ actual fun InitializeSettings() {
     LaunchedEffect(Unit) {
         val storage = createSettingsStorage(context)
         SettingsRepository.initialize(storage)
+        HistoryRepository.initialize(storage)
     }
 }
