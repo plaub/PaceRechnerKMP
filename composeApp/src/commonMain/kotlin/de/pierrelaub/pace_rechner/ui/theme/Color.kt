@@ -26,13 +26,13 @@ val DarkOnSurfaceVariant = Color(0xFFB3B3B3)
 
 // App Specific Colors (consistent across themes)
 val SwimColor = Color(0xFF5DADE2) // Etwas gedämpfter Blauton für besseren Kontrast
-val SwimOnColor = Color.White
+val SwimOnColor = Color(0xFF2D3436)
 val BikeColor = Color(0xFF58D68D) // Helleres Grün für bessere Sichtbarkeit im Dunkeln
-val BikeOnColor = Color.White
+val BikeOnColor = Color(0xFF2D3436)
 val RunColor = Color(0xFFE67E22) // Wärmeres Orange für besseren Kontrast
-val RunOnColor = Color.White // Weißer Text für bessere Lesbarkeit
+val RunOnColor = Color(0xFF2D3436) // Weißer Text für bessere Lesbarkeit
 val TransitionColor = Color(0xFFB39DDB) // Sanfteres Lila für dunkles Theme
-val TransitionOnColor = Color.White // Weißer statt schwarzer Text
+val TransitionOnColor = Color(0xFF2D3436) // Weißer statt schwarzer Text
 
 // Error Colors
 val ErrorLight = Color(0xFFB3261E)

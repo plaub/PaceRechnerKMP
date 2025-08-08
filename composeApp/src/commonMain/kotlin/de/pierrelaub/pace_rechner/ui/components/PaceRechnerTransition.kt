@@ -21,20 +21,12 @@ fun PaceRechnerTransition(
 ) {
     Column(
         modifier = modifier
-            .background(Color(0xFFDDA0DD))
+            .background(Color.Transparent)
             .padding(24.dp)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "Transition",
-            color = Color(0xFF2D3436),
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            textAlign = TextAlign.Center
-        )
-
         DurationPicker(
             totalSeconds = time,
             onTotalSecondsChange = onTimeChange
