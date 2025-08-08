@@ -24,8 +24,8 @@ import kotlin.math.round
 @Composable
 fun PaceRechnerForm(
     title: String = "Run",
-    backgroundColor: Color = Color.White,
-    textColor: Color = Color.Black,
+    backgroundColor: Color = MaterialTheme.colorScheme.primary,
+    textColor: Color = MaterialTheme.colorScheme.onPrimary,
     paceUnit: PaceUnit = PaceUnit.Run,
     distance: Double = 1.0,
     onDistanceChange: (Double) -> Unit = {},
@@ -60,96 +60,97 @@ fun PaceRechnerForm(
         }
     }
 
-    Column(
-        modifier = modifier
-            .background(backgroundColor)
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = backgroundColor
+        ),
+        shape = RoundedCornerShape(28.dp)
     ) {
-        // Distance Row
-        FormRow(
-            label = "Distanz",
-            unit = distanceUnit.value,
-            textColor = textColor
-        ) {
-            StyledTextField(
-                value = distanceText,
-                onValueChange = { distanceText = it },
-                onDone = {
-                    handleDistanceChange(
-                        distanceText,
-                        paceType,
-                        pace,
-                        speed,
-                        paceUnit,
-                        onDistanceChange,
-                        onTimeChange
-                    )
-                },
-                backgroundColor = backgroundColor,
-                textColor = textColor
-            )
-        }
-
-        // Time Row
-        FormRow(
-            label = "Zeit",
-            unit = null,
-            textColor = textColor
-        ) {
-            DurationPicker(
-                totalSeconds = time,
-                onTotalSecondsChange = { newTime ->
-                    handleTimeChange(
-                        newTime,
-                        paceType,
-                        distance,
-                        paceUnit,
-                        onTimeChange,
-                        onPaceChange,
-                        onSpeedChange
+        Box {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                // Distance Row
+                FormRow(
+                    label = "Distanz",
+                    unit = distanceUnit.value,
+                    textColor = textColor
+                ) {
+                    StyledTextField(
+                        value = distanceText,
+                        onValueChange = { distanceText = it },
+                        onDone = {
+                            handleDistanceChange(
+                                distanceText,
+                                paceType,
+                                pace,
+                                speed,
+                                paceUnit,
+                                onDistanceChange,
+                                onTimeChange
+                            )
+                        },
+                        textColor = textColor
                     )
                 }
-            )
-        }
 
-        // Pace Row (only if paceType is Pace)
-        if (paceType == PaceType.Pace) {
-            FormRow(
-                label = "Pace",
-                unit = paceUnit.value,
-                textColor = textColor
-            ) {
-                DurationPicker(
-                    totalSeconds = pace,
-                    onTotalSecondsChange = { newPace ->
-                        handlePaceChange(newPace, distance, paceUnit, onTimeChange, onPaceChange)
-                    }
-                )
-            }
-        }
-
-        // Speed Row (only if paceType is Speed)
-        if (paceType == PaceType.Speed) {
-            FormRow(
-                label = "Speed",
-                unit = "km/h",
-                textColor = textColor
-            ) {
-                StyledTextField(
-                    value = speedText,
-                    onValueChange = { speedText = it },
-                    onDone = {
-                        handleSpeedChange(
-                            speedText.toDoubleOrNull() ?: speed,
-                            distance,
-                            onTimeChange,
-                            onSpeedChange
-                        )
-                    },
-                    backgroundColor = backgroundColor,
+                // Time Row
+                FormRow(
+                    label = "Zeit",
+                    unit = null,
                     textColor = textColor
-                )
+                ) {
+                    DurationPicker(
+                        totalSeconds = time,
+                        onTotalSecondsChange = { newTime ->
+                            handleTimeChange(
+                                newTime,
+                                distance,
+                                paceType,
+                                paceUnit,
+                                onTimeChange,
+                                onPaceChange,
+                                onSpeedChange
+                            )
+                        }
+                    )
+                }
+
+                // Pace or Speed Row based on paceType
+                if (paceType == PaceType.Pace) {
+                    FormRow(
+                        label = "Pace",
+                        unit = paceUnit.value,
+                        textColor = textColor
+                    ) {
+                        DurationPicker(
+                            totalSeconds = pace,
+                            onTotalSecondsChange = { newPace ->
+                                handlePaceChange(newPace, distance, paceUnit, onTimeChange, onPaceChange)
+                            }
+                        )
+                    }
+                } else {
+                    FormRow(
+                        label = "Speed",
+                        unit = "km / h",
+                        textColor = textColor
+                    ) {
+                        StyledTextField(
+                            value = speedText,
+                            onValueChange = { speedText = it },
+                            onDone = {
+                                val newSpeed = speedText.replace(",", ".").toDoubleOrNull()
+                                if (newSpeed != null && newSpeed >= 1) {
+                                    handleSpeedChange(newSpeed, distance, onTimeChange, onSpeedChange)
+                                }
+                            },
+                            textColor = textColor
+                        )
+                    }
+                }
             }
         }
     }
@@ -195,7 +196,6 @@ private fun StyledTextField(
     value: String,
     onValueChange: (String) -> Unit,
     onDone: () -> Unit,
-    backgroundColor: Color,
     textColor: Color,
     modifier: Modifier = Modifier
 ) {
@@ -208,12 +208,12 @@ private fun StyledTextField(
         modifier = modifier.width(120.dp),
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedTextColor = Color(0xFF2D3436),
-            unfocusedTextColor = Color(0xFF2D3436),
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            focusedBorderColor = Color.White.copy(alpha = 0.8f),
-            unfocusedBorderColor = Color.White.copy(alpha = 0.6f)
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            focusedBorderColor = MaterialTheme.colorScheme.outline,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
         ),
         textStyle = LocalTextStyle.current.copy(
             textAlign = TextAlign.Center,
@@ -268,8 +268,8 @@ private fun handlePaceChange(
 
 private fun handleTimeChange(
     newTime: Int,
-    paceType: PaceType,
     distance: Double,
+    paceType: PaceType,
     paceUnit: PaceUnit,
     onTimeChange: (Int) -> Unit,
     onPaceChange: (Int) -> Unit,

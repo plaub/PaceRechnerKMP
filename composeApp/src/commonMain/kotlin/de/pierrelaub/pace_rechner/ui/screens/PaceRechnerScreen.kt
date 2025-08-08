@@ -16,7 +16,7 @@ fun PaceRechnerScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         PaceRechner(
             modifier = Modifier.fillMaxSize()

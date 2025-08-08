@@ -78,7 +78,7 @@ fun DurationPicker(
             text = ":",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF2D3436)
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         // Minutes
@@ -99,7 +99,7 @@ fun DurationPicker(
             text = ":",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF2D3436)
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         // Seconds
@@ -146,15 +146,15 @@ private fun TimePickerDropdown(
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = Color(0xFF2D3436),
-                unfocusedTextColor = Color(0xFF2D3436),
-                focusedContainerColor = Color.White.copy(alpha = 0.95f), // Weniger transparent für bessere Lesbarkeit
-                unfocusedContainerColor = Color.White.copy(alpha = 0.95f),
-                focusedBorderColor = Color(0xFF2D3436).copy(alpha = 0.3f), // Dunkler Border für besseren Kontrast
-                unfocusedBorderColor = Color(0xFF2D3436).copy(alpha = 0.2f),
-                disabledTextColor = Color(0xFF2D3436).copy(alpha = 0.6f),
-                disabledContainerColor = Color.White.copy(alpha = 0.5f),
-                disabledBorderColor = Color(0xFF2D3436).copy(alpha = 0.2f)
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedBorderColor = MaterialTheme.colorScheme.outline,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
+                disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+                disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
             ),
             textStyle = LocalTextStyle.current.copy(
                 textAlign = TextAlign.Center,

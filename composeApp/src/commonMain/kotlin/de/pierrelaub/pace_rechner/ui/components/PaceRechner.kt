@@ -150,7 +150,6 @@ fun PaceRechner(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -158,7 +157,7 @@ fun PaceRechner(
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 shape = RoundedCornerShape(16.dp)
             ) {
@@ -183,8 +182,8 @@ fun PaceRechner(
                                     .width(150.dp),
                                 shape = RoundedCornerShape(16.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color(0xFF74B9FF),
-                                    unfocusedBorderColor = Color(0xFFDDD6FE)
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                                 )
                             )
                             ExposedDropdownMenu(
@@ -205,21 +204,7 @@ fun PaceRechner(
                                 }
                             }
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Um wieviel Uhr startest du?",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFF2D3436)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        DurationPicker(
-                            totalSeconds = dayTimeStart,
-                            onTotalSecondsChange = { dayTimeStart = it }
-                        )
                     }
-
-
                 }
             }
         }
@@ -227,14 +212,14 @@ fun PaceRechner(
         // Swim
         item {
             PaceRechnerCard(
-                backgroundColor = Color(0xFF74B9FF),
-                textColor = Color.White,
+                backgroundColor = de.pierrelaub.pace_rechner.ui.theme.SwimColor,
+                textColor = de.pierrelaub.pace_rechner.ui.theme.SwimOnColor,
                 title = "Swim"
             ) {
                 PaceRechnerForm(
                     title = "Swim",
-                    backgroundColor = Color(0xFF74B9FF),
-                    textColor = Color.White,
+                    backgroundColor = de.pierrelaub.pace_rechner.ui.theme.SwimColor,
+                    textColor = de.pierrelaub.pace_rechner.ui.theme.SwimOnColor,
                     distance = swimDistance,
                     onDistanceChange = { swimDistance = it },
                     time = swimTime,
@@ -251,8 +236,8 @@ fun PaceRechner(
         // T1
         item {
             PaceRechnerCard(
-                backgroundColor = Color(0xFFDDA0DD),
-                textColor = Color.Black,
+                backgroundColor = de.pierrelaub.pace_rechner.ui.theme.TransitionColor,
+                textColor = de.pierrelaub.pace_rechner.ui.theme.TransitionOnColor,
                 title = "T1"
             ) {
                 PaceRechnerTransition(
@@ -265,14 +250,14 @@ fun PaceRechner(
         // Bike
         item {
             PaceRechnerCard(
-                backgroundColor = Color(0xFF00B894),
-                textColor = Color.White,
+                backgroundColor = de.pierrelaub.pace_rechner.ui.theme.BikeColor,
+                textColor = de.pierrelaub.pace_rechner.ui.theme.BikeOnColor,
                 title = "Bike"
             ) {
                 PaceRechnerForm(
                     title = "Bike",
-                    backgroundColor = Color(0xFF00B894),
-                    textColor = Color.White,
+                    backgroundColor = de.pierrelaub.pace_rechner.ui.theme.BikeColor,
+                    textColor = de.pierrelaub.pace_rechner.ui.theme.BikeOnColor,
                     distance = bikeDistance,
                     onDistanceChange = { bikeDistance = it },
                     time = bikeTime,
@@ -288,8 +273,8 @@ fun PaceRechner(
         // T2
         item {
             PaceRechnerCard(
-                backgroundColor = Color(0xFFDDA0DD),
-                textColor = Color.Black,
+                backgroundColor = de.pierrelaub.pace_rechner.ui.theme.TransitionColor,
+                textColor = de.pierrelaub.pace_rechner.ui.theme.TransitionOnColor,
                 title = "T2"
             ) {
                 PaceRechnerTransition(
@@ -302,14 +287,14 @@ fun PaceRechner(
         // Run
         item {
             PaceRechnerCard(
-                backgroundColor = Color(0xFFFAB1A0),
-                textColor = Color(0xFF2D3436),
+                backgroundColor = de.pierrelaub.pace_rechner.ui.theme.RunColor,
+                textColor = de.pierrelaub.pace_rechner.ui.theme.RunOnColor,
                 title = "Run"
             ) {
                 PaceRechnerForm(
                     title = "Run",
-                    backgroundColor = Color(0xFFFAB1A0),
-                    textColor = Color(0xFF2D3436),
+                    backgroundColor = de.pierrelaub.pace_rechner.ui.theme.RunColor,
+                    textColor = de.pierrelaub.pace_rechner.ui.theme.RunOnColor,
                     distance = runDistance,
                     onDistanceChange = { runDistance = it },
                     time = runTime,
@@ -381,7 +366,7 @@ fun PaceRechnerCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = RoundedCornerShape(20.dp)
     ) {
@@ -396,12 +381,12 @@ fun PaceRechnerCard(
             Card(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF2D3436)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
                     text = title,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)

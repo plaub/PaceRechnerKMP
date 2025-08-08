@@ -7,7 +7,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import de.pierrelaub.pace_rechner.data.InitializeSettings
+import de.pierrelaub.pace_rechner.data.SettingsRepository
 import de.pierrelaub.pace_rechner.ui.navigation.MainNavigation
+import de.pierrelaub.pace_rechner.ui.theme.PaceRechnerTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -16,7 +18,10 @@ fun App() {
     // Initialize settings storage for the current platform
     InitializeSettings()
 
-    MaterialTheme {
+    // Get theme preference from settings
+    val isDarkTheme by SettingsRepository.isDarkTheme
+
+    PaceRechnerTheme(darkTheme = isDarkTheme) {
         Column(
             modifier = Modifier
                 .fillMaxSize()

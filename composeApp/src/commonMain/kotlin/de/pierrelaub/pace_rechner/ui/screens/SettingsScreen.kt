@@ -21,13 +21,20 @@ fun SettingsScreen(
 ) {
     // Use the repository for persistent settings
     val selectedDefaultDistance by SettingsRepository.defaultDistance
+    val isDarkTheme by SettingsRepository.isDarkTheme
     var defaultDistanceExpanded by remember { mutableStateOf(false) }
-    
+    var themeExpanded by remember { mutableStateOf(false) }
+
     val distanceOptions = listOf(
         "sprint" to "Sprint",
         "olympic" to "Olympisch",
         "md" to "Mitteldistanz", 
         "ld" to "Langdistanz"
+    )
+
+    val themeOptions = listOf(
+        false to "Hell",
+        true to "Dunkel"
     )
 
     LazyColumn(
@@ -39,7 +46,7 @@ fun SettingsScreen(
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(
@@ -50,13 +57,13 @@ fun SettingsScreen(
                         text = "Einstellungen",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2D3436)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = "Konfiguriere deine App-Einstellungen.",
                         fontSize = 16.sp,
-                        color = Color(0xFF636E72),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -67,13 +74,32 @@ fun SettingsScreen(
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F9FA)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // Theme Setting
+                    DropdownSettingItem(
+                        title = "Theme",
+                        description = "Wähle das Erscheinungsbild der App",
+                        selectedValue = isDarkTheme,
+                        options = themeOptions,
+                        expanded = themeExpanded,
+                        onExpandedChange = { themeExpanded = it },
+                        onValueChange = { newTheme ->
+                            SettingsRepository.setDarkTheme(newTheme)
+                        },
+                        displayText = { if (it) "Dunkel" else "Hell" }
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        color = MaterialTheme.colorScheme.outline
+                    )
+
                     // Standard-Distanz Setting mit Repository
                     DropdownSettingItem(
                         title = "Standard-Distanz",
@@ -86,18 +112,6 @@ fun SettingsScreen(
                             SettingsRepository.setDefaultDistance(newDistance)
                         }
                     )
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 8.dp),
-                        color = Color(0xFFE0E0E0)
-                    )
-
-                    // Theme Setting (Placeholder)
-                    SettingItem(
-                        title = "Theme",
-                        description = "Hell, Dunkel oder System",
-                        value = "System"
-                    )
                 }
             }
         }
@@ -106,78 +120,55 @@ fun SettingsScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DropdownSettingItem(
+fun <T> DropdownSettingItem(
     title: String,
     description: String,
-    selectedValue: String,
-    options: List<Pair<String, String>>,
+    selectedValue: T,
+    options: List<Pair<T, String>>,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    onValueChange: (String) -> Unit
+    onValueChange: (T) -> Unit,
+    displayText: ((T) -> String)? = null
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Setting Title and Description
-        Column {
-            Text(
-                text = title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF2D3436)
-            )
-            Text(
-                text = description,
-                fontSize = 14.sp,
-                color = Color(0xFF636E72)
-            )
-        }
-        
-        // Dropdown
+    Column {
+        Text(
+            text = title,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = description,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = onExpandedChange
         ) {
             OutlinedTextField(
-                value = options.find { it.first == selectedValue }?.second ?: "Unbekannt",
+                value = displayText?.invoke(selectedValue) ?: options.find { it.first == selectedValue }?.second ?: "",
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 modifier = Modifier
                     .menuAnchor()
-                    .fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF74B9FF),
-                    unfocusedBorderColor = Color(0xFFDDD6FE),
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                ),
-                textStyle = LocalTextStyle.current.copy(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                    .fillMaxWidth()
             )
             
             ExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { onExpandedChange(false) }
             ) {
-                options.forEach { (value, label) ->
+                options.forEach { option ->
                     DropdownMenuItem(
-                        text = { 
-                            Text(
-                                text = label,
-                                fontWeight = if (value == selectedValue) FontWeight.Bold else FontWeight.Normal
-                            ) 
-                        },
+                        text = { Text(option.second) },
                         onClick = {
-                            onValueChange(value)
+                            onValueChange(option.first)
                             onExpandedChange(false)
-                        },
-                        colors = MenuDefaults.itemColors(
-                            textColor = if (value == selectedValue) Color(0xFF74B9FF) else Color(0xFF2D3436)
-                        )
+                        }
                     )
                 }
             }
