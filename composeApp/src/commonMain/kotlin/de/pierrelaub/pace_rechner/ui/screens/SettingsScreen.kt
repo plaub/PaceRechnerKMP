@@ -12,6 +12,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.pierrelaub.pace_rechner.data.SettingsRepository
+import de.pierrelaub.pace_rechner.types.CompetitionType
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,15 +23,21 @@ fun SettingsScreen(
     // Use the repository for persistent settings
     val selectedDefaultDistance by SettingsRepository.defaultDistance
     val isDarkTheme by SettingsRepository.isDarkTheme
+    val selectedCompetitionType by SettingsRepository.competitionType
+
     var defaultDistanceExpanded by remember { mutableStateOf(false) }
     var themeExpanded by remember { mutableStateOf(false) }
+    var competitionTypeExpanded by remember { mutableStateOf(false) }
 
-    val distanceOptions = listOf(
-        "sprint" to "Sprint",
-        "olympic" to "Olympisch",
-        "md" to "Mitteldistanz", 
-        "ld" to "Langdistanz"
-    )
+    // Competition type options
+    val competitionTypeOptions = CompetitionType.entries.map { it to it.displayName }
+
+    // Distance options based on selected competition type
+    val distanceOptions = if (selectedCompetitionType.getAvailablePresets().isNotEmpty()) {
+        selectedCompetitionType.getAvailablePresets()
+    } else {
+        listOf("" to "Keine Presets verfügbar")
+    }
 
     val themeOptions = listOf(
         false to "Hell",
@@ -81,6 +88,32 @@ fun SettingsScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // Competition Type Setting
+                    DropdownSettingItem(
+                        title = "Wettkampftyp",
+                        description = "Wähle welche Sportarten angezeigt werden sollen",
+                        selectedValue = selectedCompetitionType,
+                        options = competitionTypeOptions,
+                        expanded = competitionTypeExpanded,
+                        onExpandedChange = { competitionTypeExpanded = it },
+                        onValueChange = { newCompetitionType ->
+                            SettingsRepository.setCompetitionType(newCompetitionType)
+                            // Reset default distance when competition type changes
+                            val newPresets = newCompetitionType.getAvailablePresets()
+                            if (newPresets.isNotEmpty()) {
+                                SettingsRepository.setDefaultDistance(newPresets.first().first)
+                            } else {
+                                SettingsRepository.setDefaultDistance("")
+                            }
+                        },
+                        displayText = { it.displayName }
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        color = MaterialTheme.colorScheme.outline
+                    )
+
                     // Theme Setting
                     DropdownSettingItem(
                         title = "Theme",
@@ -95,23 +128,26 @@ fun SettingsScreen(
                         displayText = { if (it) "Dunkel" else "Hell" }
                     )
 
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 8.dp),
-                        color = MaterialTheme.colorScheme.outline
-                    )
+                    // Only show distance presets if available for selected competition type
+                    if (selectedCompetitionType.getAvailablePresets().isNotEmpty()) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.outline
+                        )
 
-                    // Standard-Distanz Setting mit Repository
-                    DropdownSettingItem(
-                        title = "Standard-Distanz",
-                        description = "Wähle die beim Start angezeigte Distanz",
-                        selectedValue = selectedDefaultDistance,
-                        options = distanceOptions,
-                        expanded = defaultDistanceExpanded,
-                        onExpandedChange = { defaultDistanceExpanded = it },
-                        onValueChange = { newDistance ->
-                            SettingsRepository.setDefaultDistance(newDistance)
-                        }
-                    )
+                        // Standard-Distanz Setting mit Repository
+                        DropdownSettingItem(
+                            title = "Standard-Distanz",
+                            description = "Wähle die beim Start angezeigte Distanz für ${selectedCompetitionType.displayName}",
+                            selectedValue = selectedDefaultDistance,
+                            options = distanceOptions,
+                            expanded = defaultDistanceExpanded,
+                            onExpandedChange = { defaultDistanceExpanded = it },
+                            onValueChange = { newDistance ->
+                                SettingsRepository.setDefaultDistance(newDistance)
+                            }
+                        )
+                    }
                 }
             }
         }

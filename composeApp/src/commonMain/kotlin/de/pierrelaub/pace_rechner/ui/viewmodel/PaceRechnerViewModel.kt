@@ -3,10 +3,12 @@ package de.pierrelaub.pace_rechner.ui.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import de.pierrelaub.pace_rechner.data.PaceCalculation
 import de.pierrelaub.pace_rechner.data.SportActivity
 import de.pierrelaub.pace_rechner.data.SettingsRepository
 import de.pierrelaub.pace_rechner.types.SportsType
+import de.pierrelaub.pace_rechner.types.CompetitionType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,12 +34,155 @@ class PaceRechnerViewModel {
 
     init {
         loadDefaultSettings()
+
+        // React to competition type changes from settings
+        viewModelScope.launch {
+            snapshotFlow { SettingsRepository.getCompetitionType() }
+                .collect { competitionType ->
+                    val defaultDistance = SettingsRepository.getDefaultDistance()
+                    initializeForCompetitionType(competitionType, defaultDistance)
+                }
+        }
     }
 
     private fun loadDefaultSettings() {
         viewModelScope.launch {
+            val competitionType = SettingsRepository.getCompetitionType()
             val defaultDistance = SettingsRepository.getDefaultDistance()
-            handlePresetChange(defaultDistance)
+
+            // Initialize activities based on competition type
+            initializeForCompetitionType(competitionType, defaultDistance)
+        }
+    }
+
+    private fun initializeForCompetitionType(competitionType: CompetitionType, preset: String = "") {
+        // Clear existing activities and transitions
+        activities = emptyList()
+        transitionTimes = mutableMapOf()
+
+        when (competitionType) {
+            CompetitionType.Triathlon -> {
+                if (preset.isNotEmpty()) {
+                    handleTriathlonPresetChange(preset)
+                } else {
+                    // Default triathlon setup
+                    activities = listOf(
+                        SportActivity(SportsType.Swim, 3800.0, 4560, 120.0),
+                        SportActivity(SportsType.Bike, 180.0, 25920, 25.0),
+                        SportActivity(SportsType.Run, 42195.0, 16034, 380.0)
+                    )
+                    transitionTimes = mutableMapOf(0 to 120, 1 to 90)
+                }
+            }
+            CompetitionType.Duathlon -> {
+                handleDuathlonPresetChange(preset)
+            }
+            CompetitionType.Swimming -> {
+                activities = listOf(SportActivity(SportsType.Swim, 3800.0, 4560, 120.0))
+            }
+            CompetitionType.Cycling -> {
+                activities = listOf(SportActivity(SportsType.Bike, 180.0, 25920, 25.0))
+            }
+            CompetitionType.Running -> {
+                activities = listOf(SportActivity(SportsType.Run, 42195.0, 16034, 380.0))
+            }
+            CompetitionType.Rowing -> {
+                activities = listOf(SportActivity(SportsType.Rowing, 2000.0, 7200, 15.0))
+            }
+            CompetitionType.Hiking -> {
+                activities = listOf(SportActivity(SportsType.Hiking, 21097.5, 25200, 600.0))
+            }
+            CompetitionType.Walking -> {
+                activities = listOf(SportActivity(SportsType.Walking, 10000.0, 21600, 720.0))
+            }
+        }
+    }
+
+    fun handlePresetChange(selectedPreset: String) {
+        val competitionType = SettingsRepository.getCompetitionType()
+
+        when (competitionType) {
+            CompetitionType.Triathlon -> handleTriathlonPresetChange(selectedPreset)
+            CompetitionType.Duathlon -> handleDuathlonPresetChange(selectedPreset)
+            else -> {
+                // For single sports, no presets to handle
+            }
+        }
+        preset = selectedPreset
+    }
+
+    private fun handleTriathlonPresetChange(selectedPreset: String) {
+        when (selectedPreset) {
+            "sprint" -> {
+                activities = listOf(
+                    SportActivity(SportsType.Swim, 750.0, 900, 120.0),
+                    SportActivity(SportsType.Bike, 20.0, 2880, 25.0),
+                    SportActivity(SportsType.Run, 5000.0, 1500, 300.0)
+                )
+                transitionTimes = mutableMapOf(0 to 120, 1 to 90)
+            }
+            "olympic" -> {
+                activities = listOf(
+                    SportActivity(SportsType.Swim, 1500.0, 1800, 120.0),
+                    SportActivity(SportsType.Bike, 40.0, 5760, 25.0),
+                    SportActivity(SportsType.Run, 10000.0, 3000, 300.0)
+                )
+                transitionTimes = mutableMapOf(0 to 120, 1 to 90)
+            }
+            "md" -> {
+                activities = listOf(
+                    SportActivity(SportsType.Swim, 1900.0, 2280, 120.0),
+                    SportActivity(SportsType.Bike, 90.0, 12960, 25.0),
+                    SportActivity(SportsType.Run, 21097.5, 8017, 380.0)
+                )
+                transitionTimes = mutableMapOf(0 to 120, 1 to 90)
+            }
+            "ld" -> {
+                activities = listOf(
+                    SportActivity(SportsType.Swim, 3800.0, 4560, 120.0),
+                    SportActivity(SportsType.Bike, 180.0, 25920, 25.0),
+                    SportActivity(SportsType.Run, 42195.0, 16034, 380.0)
+                )
+                transitionTimes = mutableMapOf(0 to 120, 1 to 90)
+            }
+        }
+    }
+
+    private fun handleDuathlonPresetChange(selectedPreset: String) {
+        when (selectedPreset) {
+            "sprint_du" -> {
+                activities = listOf(
+                    SportActivity(SportsType.Run, 5000.0, 1500, 300.0),
+                    SportActivity(SportsType.Bike, 20.0, 2880, 25.0),
+                    SportActivity(SportsType.Run, 2500.0, 750, 300.0)
+                )
+                transitionTimes = mutableMapOf(0 to 60, 1 to 60)
+            }
+            "standard_du" -> {
+                activities = listOf(
+                    SportActivity(SportsType.Run, 10000.0, 3000, 300.0),
+                    SportActivity(SportsType.Bike, 40.0, 5760, 25.0),
+                    SportActivity(SportsType.Run, 5000.0, 1500, 300.0)
+                )
+                transitionTimes = mutableMapOf(0 to 90, 1 to 90)
+            }
+            "long_du" -> {
+                activities = listOf(
+                    SportActivity(SportsType.Run, 21097.5, 8017, 380.0),
+                    SportActivity(SportsType.Bike, 90.0, 12960, 25.0),
+                    SportActivity(SportsType.Run, 10000.0, 3800, 380.0)
+                )
+                transitionTimes = mutableMapOf(0 to 120, 1 to 120)
+            }
+            else -> {
+                // Default duathlon
+                activities = listOf(
+                    SportActivity(SportsType.Run, 10000.0, 3000, 300.0),
+                    SportActivity(SportsType.Bike, 40.0, 5760, 25.0),
+                    SportActivity(SportsType.Run, 5000.0, 1500, 300.0)
+                )
+                transitionTimes = mutableMapOf(0 to 90, 1 to 90)
+            }
         }
     }
 
@@ -97,44 +242,6 @@ class PaceRechnerViewModel {
         if (index < activities.size) {
             activities = activities.filterIndexed { i, _ -> i != index }
         }
-    }
-
-    fun handlePresetChange(selectedPreset: String) {
-        when (selectedPreset) {
-            "sprint" -> {
-                activities = listOf(
-                    SportActivity(SportsType.Swim, 750.0, 900, 120.0),
-                    SportActivity(SportsType.Bike, 20.0, 2880, 25.0),
-                    SportActivity(SportsType.Run, 5000.0, 1500, 300.0)
-                )
-                transitionTimes = mutableMapOf(0 to 120, 1 to 90) // T1 und T2
-            }
-            "olympic" -> {
-                activities = listOf(
-                    SportActivity(SportsType.Swim, 1500.0, 1800, 120.0),
-                    SportActivity(SportsType.Bike, 40.0, 5760, 25.0),
-                    SportActivity(SportsType.Run, 10000.0, 3000, 300.0)
-                )
-                transitionTimes = mutableMapOf(0 to 120, 1 to 90)
-            }
-            "md" -> {
-                activities = listOf(
-                    SportActivity(SportsType.Swim, 1900.0, 2280, 120.0),
-                    SportActivity(SportsType.Bike, 90.0, 12960, 25.0),
-                    SportActivity(SportsType.Run, 21097.5, 8017, 380.0)
-                )
-                transitionTimes = mutableMapOf(0 to 120, 1 to 90)
-            }
-            "ld" -> {
-                activities = listOf(
-                    SportActivity(SportsType.Swim, 3800.0, 4560, 120.0),
-                    SportActivity(SportsType.Bike, 180.0, 25920, 25.0),
-                    SportActivity(SportsType.Run, 42195.0, 16034, 380.0)
-                )
-                transitionTimes = mutableMapOf(0 to 120, 1 to 90)
-            }
-        }
-        preset = selectedPreset
     }
 
     // Backward compatibility - einzelne Update-Funktionen
