@@ -14,12 +14,14 @@ import de.pierrelaub.pace_rechner.types.CompetitionType
 import de.pierrelaub.pace_rechner.types.SportsType
 import de.pierrelaub.pace_rechner.ui.viewmodel.PaceRechnerSummaryViewModel
 import de.pierrelaub.pace_rechner.ui.viewmodel.PaceRechnerViewModel
+import de.pierrelaub.pace_rechner.resources.LocalizedStrings
 
 @Composable
 fun PaceRechnerSummary(
     summaryViewModel: PaceRechnerSummaryViewModel,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalizedStrings()
     // Get current competition type from settings
     val competitionType by SettingsRepository.competitionType
 
@@ -33,14 +35,14 @@ fun PaceRechnerSummary(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "${competitionType.displayName} Zusammenfassung",
+                text = "${competitionType.displayName} ${strings.summary}",
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
             // Dynamic sections based on competition type
-            DynamicSummaryContent(competitionType, summaryViewModel)
+            DynamicSummaryContent(competitionType, summaryViewModel, strings)
         }
     }
 }
@@ -48,7 +50,8 @@ fun PaceRechnerSummary(
 @Composable
 private fun DynamicSummaryContent(
     competitionType: CompetitionType,
-    summaryViewModel: PaceRechnerSummaryViewModel
+    summaryViewModel: PaceRechnerSummaryViewModel,
+    strings: de.pierrelaub.pace_rechner.resources.Strings
 ) {
     // Get activities from the current competition type configuration
     val activities = remember(competitionType) {
@@ -56,30 +59,31 @@ private fun DynamicSummaryContent(
     }
 
     // Section: Individual Times
-    SummarySection("Zeiten") {
+    SummarySection("${strings.time}:") {
         activities.forEachIndexed { index, sportsType ->
-            val activityName = getSportDisplayName(sportsType, index, competitionType)
+            val activityName = getSportDisplayName(sportsType, index, competitionType, strings)
             SummaryRow("$activityName:", summaryViewModel.getActivityTimeString(index))
 
             // Add transition time after each sport (except the last one)
             if (index < activities.size - 1 && competitionType.hasTransitions) {
-                SummaryRow("T${index + 1}:", summaryViewModel.getTransitionTimeString(index))
+                val transitionName = if (index == 0) strings.transition1 else strings.transition2
+                SummaryRow("$transitionName:", summaryViewModel.getTransitionTimeString(index))
             }
         }
-        SummaryRow("Gesamt:", summaryViewModel.totalTimeString, isTotal = true)
+        SummaryRow("${strings.totalTime}:", summaryViewModel.totalTimeString, isTotal = true)
     }
 
     // Section: Cumulative Times (only for multi-sport events)
     if (activities.size > 1) {
         SummarySection("Kumulierte Zeiten") {
             activities.forEachIndexed { index, sportsType ->
-                val activityName = getSportDisplayName(sportsType, index, competitionType)
+                val activityName = getSportDisplayName(sportsType, index, competitionType, strings)
                 SummaryRow("Nach $activityName:", summaryViewModel.getCumulativeTimeString(index))
 
                 // Add cumulative time after transitions
                 if (index < activities.size - 1 && competitionType.hasTransitions) {
-                    // Use the new method that includes the transition time
-                    SummaryRow("Nach T${index + 1}:", summaryViewModel.getCumulativeTimeWithTransitionString(index))
+                    val transitionName = if (index == 0) strings.transition1 else strings.transition2
+                    SummaryRow("Nach $transitionName:", summaryViewModel.getCumulativeTimeWithTransitionString(index))
                 }
             }
         }
@@ -87,10 +91,10 @@ private fun DynamicSummaryContent(
 
     // Section: Clock Times
     SummarySection("Tageszeiten") {
-        SummaryRow("Start:", summaryViewModel.dayTimeStartString)
+        SummaryRow("${strings.startTime}:", summaryViewModel.dayTimeStartString)
 
         activities.forEachIndexed { index, sportsType ->
-            val activityName = getSportDisplayName(sportsType, index, competitionType)
+            val activityName = getSportDisplayName(sportsType, index, competitionType, strings)
             SummaryRow("Nach $activityName:", summaryViewModel.getClockTimeString(index))
 
             // Add clock time after transitions
@@ -100,68 +104,39 @@ private fun DynamicSummaryContent(
             }
         }
 
-        SummaryRow("Ziel:", summaryViewModel.dayTimeFinish, isTotal = true)
-    }
-
-    // Section: Split Times (only for activities that make sense)
-    activities.forEachIndexed { index, sportsType ->
-        if (shouldShowSplitTimes(sportsType)) {
-            val activityName = getSportDisplayName(sportsType, index, competitionType)
-            val distanceUnit = if (sportsType == SportsType.Bike || sportsType == SportsType.Rowing) "km" else "km"
-
-            SummarySection("Zwischenzeiten $activityName") {
-                val distance25 = summaryViewModel.getSplitDistance(index, 0.25)
-                val distance50 = summaryViewModel.getSplitDistance(index, 0.5)
-                val distance75 = summaryViewModel.getSplitDistance(index, 0.75)
-
-                val divisor = if (sportsType == SportsType.Swim) 1000.0 else 1000.0
-
-                // Simple formatting without .format()
-                val formattedDistance25 = ((distance25 / divisor * 10).toInt() / 10.0).toString()
-                val formattedDistance50 = ((distance50 / divisor * 10).toInt() / 10.0).toString()
-                val formattedDistance75 = ((distance75 / divisor * 10).toInt() / 10.0).toString()
-
-                SummaryRow(
-                    "25% (${formattedDistance25}$distanceUnit):",
-                    summaryViewModel.getSplitTimeString(index, 0.25)
-                )
-                SummaryRow(
-                    "50% (${formattedDistance50}$distanceUnit):",
-                    summaryViewModel.getSplitTimeString(index, 0.5)
-                )
-                SummaryRow(
-                    "75% (${formattedDistance75}$distanceUnit):",
-                    summaryViewModel.getSplitTimeString(index, 0.75)
-                )
-            }
-        }
+        SummaryRow("${strings.finishTime}:", summaryViewModel.dayTimeFinish, isTotal = true)
     }
 }
 
-@Composable
-private fun getSportDisplayName(sportsType: SportsType, index: Int, competitionType: CompetitionType): String {
+private fun getSportDisplayName(
+    sportsType: SportsType,
+    index: Int,
+    competitionType: CompetitionType,
+    strings: de.pierrelaub.pace_rechner.resources.Strings
+): String {
     return when (competitionType) {
         CompetitionType.Duathlon -> {
-            // For duathlon, differentiate between first and second run
             when {
-                sportsType == SportsType.Run && index == 0 -> "Laufen 1"
-                sportsType == SportsType.Run && index == 2 -> "Laufen 2"
-                else -> getSportTypeDisplayName(sportsType)
+                sportsType == SportsType.Run && index == 0 -> strings.run1
+                sportsType == SportsType.Run && index == 2 -> strings.run2
+                else -> when (sportsType) {
+                    SportsType.Swim -> strings.swim
+                    SportsType.Bike -> strings.bike
+                    SportsType.Run -> strings.run
+                    SportsType.Rowing -> strings.rowing
+                    SportsType.Hiking -> strings.hiking
+                    SportsType.Walking -> strings.walking
+                }
             }
         }
-        else -> getSportTypeDisplayName(sportsType)
-    }
-}
-
-@Composable
-private fun getSportTypeDisplayName(sportsType: SportsType): String {
-    return when (sportsType) {
-        SportsType.Swim -> "Schwimmen"
-        SportsType.Bike -> "Radfahren"
-        SportsType.Run -> "Laufen"
-        SportsType.Rowing -> "Rudern"
-        SportsType.Hiking -> "Wandern"
-        SportsType.Walking -> "Gehen"
+        else -> when (sportsType) {
+            SportsType.Swim -> strings.swim
+            SportsType.Bike -> strings.bike
+            SportsType.Run -> strings.run
+            SportsType.Rowing -> strings.rowing
+            SportsType.Hiking -> strings.hiking
+            SportsType.Walking -> strings.walking
+        }
     }
 }
 

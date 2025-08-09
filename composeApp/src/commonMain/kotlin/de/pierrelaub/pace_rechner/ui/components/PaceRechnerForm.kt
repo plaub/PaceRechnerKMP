@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import de.pierrelaub.pace_rechner.types.DistanceUnit
 import de.pierrelaub.pace_rechner.types.PaceType
 import de.pierrelaub.pace_rechner.types.PaceUnit
+import de.pierrelaub.pace_rechner.resources.LocalizedStrings
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.math.round
 
@@ -39,6 +40,7 @@ fun PaceRechnerForm(
     distanceUnit: DistanceUnit = DistanceUnit.Run,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalizedStrings()
     var distanceText by remember { mutableStateOf(distance.toString()) }
     var speedText by remember { mutableStateOf(speed.toString()) }
 
@@ -74,7 +76,7 @@ fun PaceRechnerForm(
             ) {
                 // Distance Row
                 FormRow(
-                    label = "Distanz",
+                    label = strings.distance,
                     unit = distanceUnit.value,
                     textColor = textColor
                 ) {
@@ -98,7 +100,7 @@ fun PaceRechnerForm(
 
                 // Time Row
                 FormRow(
-                    label = "Zeit",
+                    label = strings.time,
                     unit = null,
                     textColor = textColor
                 ) {
@@ -121,7 +123,7 @@ fun PaceRechnerForm(
                 // Pace or Speed Row based on paceType
                 if (paceType == PaceType.Pace) {
                     FormRow(
-                        label = "Pace",
+                        label = strings.pace,
                         unit = paceUnit.value,
                         textColor = textColor
                     ) {
@@ -134,8 +136,8 @@ fun PaceRechnerForm(
                     }
                 } else {
                     FormRow(
-                        label = "Speed",
-                        unit = "km / h",
+                        label = strings.speed,
+                        unit = strings.kmh,
                         textColor = textColor
                     ) {
                         StyledTextField(

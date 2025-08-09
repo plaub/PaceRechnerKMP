@@ -14,21 +14,23 @@ import de.pierrelaub.pace_rechner.ui.screens.HistoryScreen
 import de.pierrelaub.pace_rechner.ui.screens.PaceRechnerScreen
 import de.pierrelaub.pace_rechner.ui.screens.SettingsScreen
 import de.pierrelaub.pace_rechner.ui.viewmodel.PaceRechnerViewModel
+import de.pierrelaub.pace_rechner.resources.LocalizedStrings
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 enum class TabItem(
-    val title: String,
+    val titleKey: String,
     val emoji: String
 ) {
-    PACE_RECHNER("Rechner", "🧮"),
-    HISTORY("History", "📊"),
-    SETTINGS("Settings", "⚙️")
+    PACE_RECHNER("calculator", "🧮"),
+    HISTORY("history", "📊"),
+    SETTINGS("settings", "⚙️")
 }
 
 @Composable
 fun MainNavigation(
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalizedStrings()
     var selectedTab by remember { mutableStateOf(TabItem.PACE_RECHNER) }
     val sharedViewModel = remember { PaceRechnerViewModel() }
 
@@ -53,43 +55,81 @@ fun MainNavigation(
             }
         }
 
-        // Bottom Navigation
+        // Custom Bottom Navigation
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clip(RoundedCornerShape(20.dp)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.clip(RoundedCornerShape(16.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                TabItem.entries.forEach { tab ->
-                    NavigationBarItem(
-                        icon = {
-                            Text(
-                                text = tab.emoji,
-                                fontSize = 20.sp
-                            )
-                        },
-                        label = {
-                            Text(
-                                text = tab.title,
-                                fontSize = 12.sp,
-                                fontWeight = if (selectedTab == tab) FontWeight.Bold else FontWeight.Normal
-                            )
-                        },
-                        selected = selectedTab == tab,
-                        onClick = { selectedTab = tab },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer
-                        )
+                TabItem.values().forEach { tab ->
+                    val isSelected = selectedTab == tab
+                    val title = when (tab.titleKey) {
+                        "calculator" -> strings.calculator
+                        "history" -> strings.history
+                        "settings" -> strings.settings
+                        else -> tab.titleKey
+                    }
+
+                    TabButton(
+                        title = title,
+                        emoji = tab.emoji,
+                        isSelected = isSelected,
+                        onClick = { selectedTab = tab }
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TabButton(
+    title: String,
+    emoji: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                Color.Transparent
+            }
+        ),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp),
+            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = emoji,
+                fontSize = 20.sp
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = title,
+                fontSize = 12.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                color = if (isSelected) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                }
+            )
         }
     }
 }

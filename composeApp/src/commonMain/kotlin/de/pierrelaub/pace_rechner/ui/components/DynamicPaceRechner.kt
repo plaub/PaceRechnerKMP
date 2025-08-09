@@ -22,6 +22,7 @@ import de.pierrelaub.pace_rechner.types.SportsType
 import de.pierrelaub.pace_rechner.types.CompetitionType
 import de.pierrelaub.pace_rechner.ui.viewmodel.PaceRechnerViewModel
 import de.pierrelaub.pace_rechner.ui.viewmodel.PaceRechnerSummaryViewModel
+import de.pierrelaub.pace_rechner.resources.LocalizedStrings
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,6 +31,8 @@ fun DynamicPaceRechner(
     modifier: Modifier = Modifier,
     viewModel: PaceRechnerViewModel = remember { PaceRechnerViewModel() }
 ) {
+    val strings = LocalizedStrings()
+
     // Get current competition type from settings
     val competitionType by SettingsRepository.competitionType
 
@@ -40,7 +43,7 @@ fun DynamicPaceRechner(
 
     // Get available presets for current competition type
     val presetOptions = remember(competitionType) {
-        val baseOptions = listOf("" to "Vorlagen")
+        val baseOptions = listOf("" to strings.templates)
         val availablePresets = competitionType.getAvailablePresets()
         if (availablePresets.isNotEmpty()) {
             baseOptions + availablePresets
@@ -77,7 +80,7 @@ fun DynamicPaceRechner(
                             onExpandedChange = { viewModel.updatePresetExpanded(it) }
                         ) {
                             OutlinedTextField(
-                                value = presetOptions.find { it.first == viewModel.preset }?.second ?: "Vorlagen",
+                                value = presetOptions.find { it.first == viewModel.preset }?.second ?: strings.templates,
                                 onValueChange = {},
                                 readOnly = true,
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = viewModel.presetExpanded) },
@@ -122,20 +125,20 @@ fun DynamicPaceRechner(
                                 containerColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
-                            Text("💾 Speichern")
+                            Text("💾 ${strings.save}")
                         }
 
                         // Save Dialog
                         if (showSaveDialog) {
                             AlertDialog(
                                 onDismissRequest = { showSaveDialog = false },
-                                title = { Text("Berechnung speichern") },
+                                title = { Text(strings.saveCalculation) },
                                 text = {
                                     OutlinedTextField(
                                         value = saveName,
                                         onValueChange = { saveName = it },
-                                        label = { Text("Name eingeben") },
-                                        placeholder = { Text("z.B. ${competitionType.displayName} Training") },
+                                        label = { Text(strings.enterName) },
+                                        placeholder = { Text("${strings.exampleName} ${competitionType.displayName}") },
                                         singleLine = true
                                     )
                                 },
@@ -166,12 +169,12 @@ fun DynamicPaceRechner(
                                         },
                                         enabled = saveName.isNotBlank()
                                     ) {
-                                        Text("Speichern")
+                                        Text(strings.save)
                                     }
                                 },
                                 dismissButton = {
                                     TextButton(onClick = { showSaveDialog = false }) {
-                                        Text("Abbrechen")
+                                        Text(strings.cancel)
                                     }
                                 }
                             )
@@ -188,10 +191,10 @@ fun DynamicPaceRechner(
             PaceRechnerCard(
                 backgroundColor = sportConfig.backgroundColor,
                 textColor = sportConfig.textColor,
-                title = getSportTitle(activity.type, index, competitionType)
+                title = getSportTitle(activity.type, index, competitionType, strings)
             ) {
                 PaceRechnerForm(
-                    title = getSportTitle(activity.type, index, competitionType),
+                    title = getSportTitle(activity.type, index, competitionType, strings),
                     backgroundColor = sportConfig.backgroundColor,
                     textColor = sportConfig.textColor,
                     distance = activity.distance,
@@ -220,7 +223,7 @@ fun DynamicPaceRechner(
                 PaceRechnerCard(
                     backgroundColor = de.pierrelaub.pace_rechner.ui.theme.TransitionColor,
                     textColor = de.pierrelaub.pace_rechner.ui.theme.TransitionOnColor,
-                    title = "T${index + 1}"
+                    title = if (index == 0) strings.transition1 else strings.transition2
                 ) {
                     PaceRechnerTransition(
                         time = viewModel.transitionTimes[index] ?: 0,
@@ -316,17 +319,31 @@ fun PaceRechnerCard(
     }
 }
 
-private fun getSportTitle(sportsType: SportsType, index: Int, competitionType: CompetitionType): String {
+private fun getSportTitle(sportsType: SportsType, index: Int, competitionType: CompetitionType, strings: de.pierrelaub.pace_rechner.resources.Strings): String {
     return when (competitionType) {
         CompetitionType.Duathlon -> {
             // For duathlon, differentiate between first and second run
             when {
-                sportsType == SportsType.Run && index == 0 -> "Run 1"
-                sportsType == SportsType.Run && index == 2 -> "Run 2"
-                else -> sportsType.value
+                sportsType == SportsType.Run && index == 0 -> strings.run1
+                sportsType == SportsType.Run && index == 2 -> strings.run2
+                else -> when (sportsType) {
+                    SportsType.Swim -> strings.swim
+                    SportsType.Bike -> strings.bike
+                    SportsType.Run -> strings.run
+                    SportsType.Rowing -> strings.rowing
+                    SportsType.Hiking -> strings.hiking
+                    SportsType.Walking -> strings.walking
+                }
             }
         }
-        else -> sportsType.value
+        else -> when (sportsType) {
+            SportsType.Swim -> strings.swim
+            SportsType.Bike -> strings.bike
+            SportsType.Run -> strings.run
+            SportsType.Rowing -> strings.rowing
+            SportsType.Hiking -> strings.hiking
+            SportsType.Walking -> strings.walking
+        }
     }
 }
 

@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import de.pierrelaub.pace_rechner.data.HistoryRepository
 import de.pierrelaub.pace_rechner.data.PaceCalculation
 import de.pierrelaub.pace_rechner.utils.secondsToHHMMSS
+import de.pierrelaub.pace_rechner.resources.LocalizedStrings
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -28,6 +29,7 @@ fun HistoryScreen(
     modifier: Modifier = Modifier,
     onLoadCalculation: ((PaceCalculation) -> Unit)? = null
 ) {
+    val strings = LocalizedStrings()
     val calculations = HistoryRepository.calculations
 
     LazyColumn(
@@ -47,17 +49,14 @@ fun HistoryScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "History",
+                        text = strings.historyTitle,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = if (calculations.isEmpty())
-                            "Hier werden deine gespeicherten Berechnungen angezeigt."
-                        else
-                            "${calculations.size} gespeicherte Berechnungen",
+                        text = strings.savedCalculations,
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -74,72 +73,65 @@ fun HistoryScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Keine gespeicherten Berechnungen",
-                            fontSize = 14.sp,
+                            text = "📊",
+                            fontSize = 48.sp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = strings.noHistoryEntries,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
+                            textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Erstelle eine Berechnung im Rechner-Tab und speichere sie ab.",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
+                            text = strings.saveFirstCalculation,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
             }
         } else {
             items(calculations) { calculation ->
-                HistoryCalculationCard(
+                HistoryItem(
                     calculation = calculation,
-                    onDelete = {
-                        HistoryRepository.deleteCalculation(calculation.id)
-                    },
-                    onSelect = {
-                        onLoadCalculation?.invoke(calculation)
-                    }
+                    onLoadCalculation = onLoadCalculation,
+                    onDeleteCalculation = { HistoryRepository.deleteCalculation(it.id) }
                 )
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HistoryCalculationCard(
+private fun HistoryItem(
     calculation: PaceCalculation,
-    onDelete: () -> Unit,
-    onSelect: () -> Unit,
-    modifier: Modifier = Modifier
+    onLoadCalculation: ((PaceCalculation) -> Unit)?,
+    onDeleteCalculation: (PaceCalculation) -> Unit
 ) {
+    val strings = LocalizedStrings()
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    // Einfache Datumsformatierung ohne komplexe Formatter
-    val dateTime = Instant.fromEpochMilliseconds(calculation.timestamp)
-        .toLocalDateTime(TimeZone.currentSystemDefault())
-    val formattedDate = "${dateTime.dayOfMonth.toString().padStart(2, '0')}.${dateTime.monthNumber.toString().padStart(2, '0')}.${dateTime.year} ${dateTime.hour.toString().padStart(2, '0')}:${dateTime.minute.toString().padStart(2, '0')}"
-
     Card(
-        onClick = onSelect,
-        modifier = modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // Header with name and delete button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -150,112 +142,57 @@ private fun HistoryCalculationCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = formattedDate,
+                        text = formatTimestamp(calculation.timestamp),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
-                IconButton(
-                    onClick = { showDeleteDialog = true }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Löschen",
-                        tint = MaterialTheme.colorScheme.error
-                    )
+                Row {
+                    if (onLoadCalculation != null) {
+                        TextButton(
+                            onClick = { onLoadCalculation(calculation) }
+                        ) {
+                            Text(strings.edit)
+                        }
+                    }
+
+                    IconButton(
+                        onClick = { showDeleteDialog = true }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = strings.delete,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Summary row
+            // Summary information
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Distances
-                Column {
+                if (calculation.presetType.isNotEmpty()) {
                     Text(
-                        text = "Distanzen",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = calculation.presetType,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium
                     )
-                    Row {
-                        Text(
-                            text = "${calculation.swimDistance.toInt()}m",
-                            fontSize = 11.sp,
-                            color = de.pierrelaub.pace_rechner.ui.theme.SwimColor
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = secondsToHHMMSS(calculation.swimTime, false),
-                            fontSize = 11.sp,
-                            color = de.pierrelaub.pace_rechner.ui.theme.SwimOnColor
-                        )
-                    }
-
-                    Row {
-                        Text(
-                            text = "${calculation.bikeDistance.toInt()}km",
-                            fontSize = 11.sp,
-                            color = de.pierrelaub.pace_rechner.ui.theme.BikeColor
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = secondsToHHMMSS(calculation.bikeTime, false),
-                            fontSize = 11.sp,
-                            color = de.pierrelaub.pace_rechner.ui.theme.BikeOnColor
-                        )
-                    }
-
-                    Row {
-                        Text(
-                            text = "${(calculation.runDistance / 1000).toInt()}km",
-                            fontSize = 11.sp,
-                            color = de.pierrelaub.pace_rechner.ui.theme.RunColor
-                        )
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Text(
-                            text = secondsToHHMMSS(calculation.runTime, false),
-                            fontSize = 11.sp,
-                            color = de.pierrelaub.pace_rechner.ui.theme.RunOnColor
-                        )
-                    }
                 }
 
-                // Total time
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = "Gesamtzeit",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = secondsToHHMMSS(calculation.totalTime, false),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    if (calculation.presetType.isNotEmpty()) {
-                        Text(
-                            text = when(calculation.presetType) {
-                                "sprint" -> "Sprint"
-                                "olympic" -> "Olympisch"
-                                "md" -> "Mitteldistanz"
-                                "ld" -> "Langdistanz"
-                                else -> calculation.presetType
-                            },
-                            fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
-                    }
-                }
+                val totalTime = calculateTotalTime(calculation)
+                Text(
+                    text = "${strings.totalTime}: ${secondsToHHMMSS(totalTime, false)}",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -264,28 +201,38 @@ private fun HistoryCalculationCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Berechnung löschen") },
-            text = {
-                Text("Möchtest du \"${calculation.name}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.")
-            },
+            title = { Text(strings.deleteEntry) },
+            text = { Text(strings.deleteEntryConfirm) },
             confirmButton = {
                 Button(
                     onClick = {
-                        onDelete()
+                        onDeleteCalculation(calculation)
                         showDeleteDialog = false
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
                 ) {
-                    Text("Löschen")
+                    Text(strings.delete)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Abbrechen")
+                    Text(strings.cancel)
                 }
             }
         )
     }
+}
+
+private fun formatTimestamp(timestamp: Long): String {
+    val dateTime = Instant.fromEpochMilliseconds(timestamp)
+        .toLocalDateTime(TimeZone.currentSystemDefault())
+    return "${dateTime.dayOfMonth.toString().padStart(2, '0')}.${dateTime.monthNumber.toString().padStart(2, '0')}.${dateTime.year} ${dateTime.hour.toString().padStart(2, '0')}:${dateTime.minute.toString().padStart(2, '0')}"
+}
+
+private fun calculateTotalTime(calculation: PaceCalculation): Int {
+    return calculation.totalTime
 }
 
 @Preview

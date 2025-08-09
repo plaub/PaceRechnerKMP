@@ -13,6 +13,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.pierrelaub.pace_rechner.data.SettingsRepository
 import de.pierrelaub.pace_rechner.types.CompetitionType
+import de.pierrelaub.pace_rechner.resources.LocalizedStrings
+import de.pierrelaub.pace_rechner.resources.LocalizationManager
+import de.pierrelaub.pace_rechner.resources.Language
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -20,6 +23,9 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalizedStrings()
+    val currentLanguage by LocalizationManager.currentLanguage
+    
     // Use the repository for persistent settings
     val selectedDefaultDistance by SettingsRepository.defaultDistance
     val isDarkTheme by SettingsRepository.isDarkTheme
@@ -28,21 +34,24 @@ fun SettingsScreen(
     var defaultDistanceExpanded by remember { mutableStateOf(false) }
     var themeExpanded by remember { mutableStateOf(false) }
     var competitionTypeExpanded by remember { mutableStateOf(false) }
+    var languageExpanded by remember { mutableStateOf(false) }
 
     // Competition type options
-    val competitionTypeOptions = CompetitionType.entries.map { it to it.displayName }
+    val competitionTypeOptions = CompetitionType.entries.map { it to getCompetitionTypeDisplayName(it, strings) }
 
     // Distance options based on selected competition type
     val distanceOptions = if (selectedCompetitionType.getAvailablePresets().isNotEmpty()) {
         selectedCompetitionType.getAvailablePresets()
     } else {
-        listOf("" to "Keine Presets verfügbar")
+        listOf("" to strings.noPresetsAvailable)
     }
 
     val themeOptions = listOf(
-        false to "Hell",
-        true to "Dunkel"
+        false to strings.lightTheme,
+        true to strings.darkTheme
     )
+
+    val languageOptions = Language.entries.map { it to it.displayName }
 
     LazyColumn(
         modifier = modifier
@@ -61,14 +70,14 @@ fun SettingsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Einstellungen",
+                        text = strings.settingsTitle,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Konfiguriere deine App-Einstellungen.",
+                        text = strings.configureSettings,
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -88,10 +97,23 @@ fun SettingsScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // Language Setting
+                    DropdownSettingItem(
+                        title = strings.language,
+                        description = strings.chooseLanguage,
+                        selectedValue = currentLanguage,
+                        options = languageOptions,
+                        expanded = languageExpanded,
+                        onExpandedChange = { languageExpanded = it },
+                        onValueChange = { newLanguage ->
+                            LocalizationManager.setLanguage(newLanguage)
+                        }
+                    )
+
                     // Competition Type Setting
                     DropdownSettingItem(
-                        title = "Wettkampftyp",
-                        description = "Wähle welche Sportarten angezeigt werden sollen",
+                        title = strings.competition,
+                        description = strings.chooseCompetition,
                         selectedValue = selectedCompetitionType,
                         options = competitionTypeOptions,
                         expanded = competitionTypeExpanded,
@@ -99,46 +121,17 @@ fun SettingsScreen(
                         onValueChange = { newCompetitionType ->
                             SettingsRepository.setCompetitionType(newCompetitionType)
                             // Reset default distance when competition type changes
-                            val newPresets = newCompetitionType.getAvailablePresets()
-                            if (newPresets.isNotEmpty()) {
-                                SettingsRepository.setDefaultDistance(newPresets.first().first)
-                            } else {
-                                SettingsRepository.setDefaultDistance("")
+                            if (newCompetitionType.getAvailablePresets().isNotEmpty()) {
+                                SettingsRepository.setDefaultDistance(newCompetitionType.getAvailablePresets().first().first)
                             }
-                        },
-                        displayText = { it.displayName }
+                        }
                     )
 
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 8.dp),
-                        color = MaterialTheme.colorScheme.outline
-                    )
-
-                    // Theme Setting
-                    DropdownSettingItem(
-                        title = "Theme",
-                        description = "Wähle das Erscheinungsbild der App",
-                        selectedValue = isDarkTheme,
-                        options = themeOptions,
-                        expanded = themeExpanded,
-                        onExpandedChange = { themeExpanded = it },
-                        onValueChange = { newTheme ->
-                            SettingsRepository.setDarkTheme(newTheme)
-                        },
-                        displayText = { if (it) "Dunkel" else "Hell" }
-                    )
-
-                    // Only show distance presets if available for selected competition type
+                    // Default Distance Setting (only show if presets are available)
                     if (selectedCompetitionType.getAvailablePresets().isNotEmpty()) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 8.dp),
-                            color = MaterialTheme.colorScheme.outline
-                        )
-
-                        // Standard-Distanz Setting mit Repository
                         DropdownSettingItem(
-                            title = "Standard-Distanz",
-                            description = "Wähle die beim Start angezeigte Distanz für ${selectedCompetitionType.displayName}",
+                            title = strings.templates,
+                            description = strings.defaultTemplate,
                             selectedValue = selectedDefaultDistance,
                             options = distanceOptions,
                             expanded = defaultDistanceExpanded,
@@ -148,9 +141,35 @@ fun SettingsScreen(
                             }
                         )
                     }
+
+                    // Theme Setting
+                    DropdownSettingItem(
+                        title = strings.theme,
+                        description = strings.chooseLightDark,
+                        selectedValue = isDarkTheme,
+                        options = themeOptions,
+                        expanded = themeExpanded,
+                        onExpandedChange = { themeExpanded = it },
+                        onValueChange = { newTheme ->
+                            SettingsRepository.setDarkTheme(newTheme)
+                        }
+                    )
                 }
             }
         }
+    }
+}
+
+private fun getCompetitionTypeDisplayName(competitionType: CompetitionType, strings: de.pierrelaub.pace_rechner.resources.Strings): String {
+    return when (competitionType) {
+        CompetitionType.Triathlon -> strings.triathlon
+        CompetitionType.Duathlon -> strings.duathlon
+        CompetitionType.Swimming -> strings.swimming
+        CompetitionType.Cycling -> strings.cycling
+        CompetitionType.Running -> strings.running
+        CompetitionType.Rowing -> strings.rowingCompetition
+        CompetitionType.Hiking -> strings.hikingCompetition
+        CompetitionType.Walking -> strings.walkingCompetition
     }
 }
 
