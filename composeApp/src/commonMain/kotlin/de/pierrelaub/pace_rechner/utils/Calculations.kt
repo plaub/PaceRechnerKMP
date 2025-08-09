@@ -1,4 +1,4 @@
-package de.pierrelaub.pace_rechner.util
+package de.pierrelaub.pace_rechner.utils
 
 import kotlin.math.roundToInt
 

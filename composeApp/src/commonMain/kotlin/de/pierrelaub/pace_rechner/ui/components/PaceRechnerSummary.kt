@@ -9,49 +9,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import de.pierrelaub.pace_rechner.ui.viewmodel.PaceRechnerSummaryViewModel
+import de.pierrelaub.pace_rechner.ui.viewmodel.PaceRechnerViewModel
 
 @Composable
 fun PaceRechnerSummary(
-    swimTimeString: String = "00:00:00",
-    bikeTimeString: String = "00:00:00",
-    runTimeString: String = "00:00:00",
-    t1TimeString: String = "00:00:00",
-    t2TimeString: String = "00:00:00",
-    totalTimeString: String = "00:00:00",
-    swimCumulativeTimeString: String = "00:00:00",
-    t1CumulativeTimeString: String = "00:00:00",
-    bikeCumulativeTimeString: String = "00:00:00",
-    t2CumulativeTimeString: String = "00:00:00",
-    dayTimeStartString: String = "00:00:00",
-    totalTimeAfterSwimString: String = "00:00:00",
-    timeAfterT1String: String = "00:00:00",
-    totalTimeAfterBikeString: String = "00:00:00",
-    timeAfterT2String: String = "00:00:00",
-    dayTimeFinish: String = "00:00:00",
-    bikeQuarter1Km: Double = 0.0,
-    bikeHalfKm: Double = 0.0,
-    bikeThreeQuarterKm: Double = 0.0,
-    runQuarter1Km: Double = 0.0,
-    runHalfKm: Double = 0.0,
-    runThreeQuarterKm: Double = 0.0,
-    bike25TimeString: String = "00:00:00",
-    bike50TimeString: String = "00:00:00",
-    bike75TimeString: String = "00:00:00",
-    run25TimeString: String = "00:00:00",
-    run50TimeString: String = "00:00:00",
-    run75TimeString: String = "00:00:00",
-    bike25CumulativeTimeString: String = "00:00:00",
-    bike50CumulativeTimeString: String = "00:00:00",
-    bike75CumulativeTimeString: String = "00:00:00",
-    run25CumulativeTimeString: String = "00:00:00",
-    run50CumulativeTimeString: String = "00:00:00",
-    run75CumulativeTimeString: String = "00:00:00",
-    clockTimeBike25String: String = "00:00:00",
-    clockTimeBike50String: String = "00:00:00",
-    clockTimeBike75String: String = "00:00:00",
-    clockTimeRun25String: String = "00:00:00",
-    clockTimeRun50String: String = "00:00:00",
-    clockTimeRun75String: String = "00:00:00",
+    summaryViewModel: PaceRechnerSummaryViewModel,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -71,41 +34,41 @@ fun PaceRechnerSummary(
             )
 
             SummarySection("Zeiten") {
-                SummaryRow("Schwimmen:", swimTimeString)
-                SummaryRow("T1:", t1TimeString)
-                SummaryRow("Radfahren:", bikeTimeString)
-                SummaryRow("T2:", t2TimeString)
-                SummaryRow("Laufen:", runTimeString)
-                SummaryRow("Gesamt:", totalTimeString, isTotal = true)
+                SummaryRow("Schwimmen:", summaryViewModel.swimTimeString)
+                SummaryRow("T1:", summaryViewModel.t1TimeString)
+                SummaryRow("Radfahren:", summaryViewModel.bikeTimeString)
+                SummaryRow("T2:", summaryViewModel.t2TimeString)
+                SummaryRow("Laufen:", summaryViewModel.runTimeString)
+                SummaryRow("Gesamt:", summaryViewModel.totalTimeString, isTotal = true)
             }
 
             SummarySection("Kumulierte Zeiten") {
-                SummaryRow("Nach Schwimmen:", swimCumulativeTimeString)
-                SummaryRow("Nach T1:", t1CumulativeTimeString)
-                SummaryRow("Nach Radfahren:", bikeCumulativeTimeString)
-                SummaryRow("Nach T2:", t2CumulativeTimeString)
-                SummaryRow("Nach Laufen:", totalTimeString, isTotal = true)
+                SummaryRow("Nach Schwimmen:", summaryViewModel.swimCumulativeTimeString)
+                SummaryRow("Nach T1:", summaryViewModel.t1CumulativeTimeString)
+                SummaryRow("Nach Radfahren:", summaryViewModel.bikeCumulativeTimeString)
+                SummaryRow("Nach T2:", summaryViewModel.t2CumulativeTimeString)
+                SummaryRow("Nach Laufen:", summaryViewModel.totalTimeString, isTotal = true)
             }
 
             SummarySection("Tageszeiten") {
-                SummaryRow("Start:", dayTimeStartString)
-                SummaryRow("Nach Schwimmen:", totalTimeAfterSwimString)
-                SummaryRow("Nach T1:", timeAfterT1String)
-                SummaryRow("Nach Radfahren:", totalTimeAfterBikeString)
-                SummaryRow("Nach T2:", timeAfterT2String)
-                SummaryRow("Ziel:", dayTimeFinish, isTotal = true)
+                SummaryRow("Start:", summaryViewModel.dayTimeStartString)
+                SummaryRow("Nach Schwimmen:", summaryViewModel.totalTimeAfterSwimString)
+                SummaryRow("Nach T1:", summaryViewModel.timeAfterT1String)
+                SummaryRow("Nach Radfahren:", summaryViewModel.totalTimeAfterBikeString)
+                SummaryRow("Nach T2:", summaryViewModel.timeAfterT2String)
+                SummaryRow("Ziel:", summaryViewModel.dayTimeFinish, isTotal = true)
             }
 
             SummarySection("Zwischenzeiten Radfahren") {
-                SummaryRow("25% (${bikeQuarter1Km}km):", bike25TimeString)
-                SummaryRow("50% (${bikeHalfKm}km):", bike50TimeString)
-                SummaryRow("75% (${bikeThreeQuarterKm}km):", bike75TimeString)
+                SummaryRow("25% (${summaryViewModel.bikeQuarter1Km}km):", summaryViewModel.bike25TimeString)
+                SummaryRow("50% (${summaryViewModel.bikeHalfKm}km):", summaryViewModel.bike50TimeString)
+                SummaryRow("75% (${summaryViewModel.bikeThreeQuarterKm}km):", summaryViewModel.bike75TimeString)
             }
 
             SummarySection("Zwischenzeiten Laufen") {
-                SummaryRow("25% (${runQuarter1Km}km):", run25TimeString)
-                SummaryRow("50% (${runHalfKm}km):", run50TimeString)
-                SummaryRow("75% (${runThreeQuarterKm}km):", run75TimeString)
+                SummaryRow("25% (${summaryViewModel.runQuarter1Km}km):", summaryViewModel.run25TimeString)
+                SummaryRow("50% (${summaryViewModel.runHalfKm}km):", summaryViewModel.run50TimeString)
+                SummaryRow("75% (${summaryViewModel.runThreeQuarterKm}km):", summaryViewModel.run75TimeString)
             }
         }
     }
@@ -158,15 +121,8 @@ private fun SummaryRow(
 @Composable
 private fun PaceRechnerSummaryPreview() {
     MaterialTheme {
-        PaceRechnerSummary(
-            swimTimeString = "00:30:00",
-            bikeTimeString = "02:30:00",
-            runTimeString = "01:45:00",
-            t1TimeString = "00:02:00",
-            t2TimeString = "00:01:30",
-            totalTimeString = "05:08:30",
-            dayTimeStartString = "07:00:00",
-            dayTimeFinish = "12:08:30"
-        )
+        val paceViewModel = PaceRechnerViewModel()
+        val summaryViewModel = PaceRechnerSummaryViewModel(paceViewModel)
+        PaceRechnerSummary(summaryViewModel = summaryViewModel)
     }
 }

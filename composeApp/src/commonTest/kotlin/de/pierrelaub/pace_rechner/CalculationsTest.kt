@@ -1,11 +1,11 @@
 package de.pierrelaub.pace_rechner
 
-import de.pierrelaub.pace_rechner.util.getEnhancedAvgSpeed
-import de.pierrelaub.pace_rechner.util.hoursValueToSecondsValue
-import de.pierrelaub.pace_rechner.util.msToKmPerHourNumber
-import de.pierrelaub.pace_rechner.util.msToMinPerKm
-import de.pierrelaub.pace_rechner.util.msToMinPerKmNumber
-import de.pierrelaub.pace_rechner.util.secondsToHHMMSS
+import de.pierrelaub.pace_rechner.utils.getEnhancedAvgSpeed
+import de.pierrelaub.pace_rechner.utils.hoursValueToSecondsValue
+import de.pierrelaub.pace_rechner.utils.msToKmPerHourNumber
+import de.pierrelaub.pace_rechner.utils.msToMinPerKm
+import de.pierrelaub.pace_rechner.utils.msToMinPerKmNumber
+import de.pierrelaub.pace_rechner.utils.secondsToHHMMSS
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
