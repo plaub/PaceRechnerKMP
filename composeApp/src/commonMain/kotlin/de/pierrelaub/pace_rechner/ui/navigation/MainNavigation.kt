@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.sp
 import de.pierrelaub.pace_rechner.ui.screens.HistoryScreen
 import de.pierrelaub.pace_rechner.ui.screens.PaceRechnerScreen
 import de.pierrelaub.pace_rechner.ui.screens.SettingsScreen
+import de.pierrelaub.pace_rechner.ui.viewmodel.PaceRechnerViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 enum class TabItem(
@@ -29,6 +30,7 @@ fun MainNavigation(
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(TabItem.PACE_RECHNER) }
+    val sharedViewModel = remember { PaceRechnerViewModel() }
 
     Column(
         modifier = modifier.fillMaxSize()
@@ -40,8 +42,13 @@ fun MainNavigation(
                 .fillMaxWidth()
         ) {
             when (selectedTab) {
-                TabItem.PACE_RECHNER -> PaceRechnerScreen()
-                TabItem.HISTORY -> HistoryScreen()
+                TabItem.PACE_RECHNER -> PaceRechnerScreen(viewModel = sharedViewModel)
+                TabItem.HISTORY -> HistoryScreen(
+                    onLoadCalculation = { calculation ->
+                        sharedViewModel.loadCalculation(calculation)
+                        selectedTab = TabItem.PACE_RECHNER
+                    }
+                )
                 TabItem.SETTINGS -> SettingsScreen()
             }
         }

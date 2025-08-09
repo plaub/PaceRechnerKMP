@@ -7,20 +7,29 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import de.pierrelaub.pace_rechner.ui.components.PaceRechner
+import de.pierrelaub.pace_rechner.ui.viewmodel.PaceRechnerViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun PaceRechnerScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: PaceRechnerViewModel? = null
 ) {
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        PaceRechner(
-            modifier = Modifier.fillMaxSize()
-        )
+        if (viewModel != null) {
+            PaceRechner(
+                modifier = Modifier.fillMaxSize(),
+                viewModel = viewModel
+            )
+        } else {
+            PaceRechner(
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }
 

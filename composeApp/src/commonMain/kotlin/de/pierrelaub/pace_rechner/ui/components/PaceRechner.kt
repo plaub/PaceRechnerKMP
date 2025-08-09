@@ -19,6 +19,7 @@ import de.pierrelaub.pace_rechner.data.SettingsRepository
 import de.pierrelaub.pace_rechner.types.DistanceUnit
 import de.pierrelaub.pace_rechner.types.PaceType
 import de.pierrelaub.pace_rechner.types.PaceUnit
+import de.pierrelaub.pace_rechner.ui.viewmodel.PaceRechnerViewModel
 import de.pierrelaub.pace_rechner.util.secondsToHHMMSS
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.math.round
@@ -26,89 +27,9 @@ import kotlin.math.round
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaceRechner(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: PaceRechnerViewModel = remember { PaceRechnerViewModel() }
 ) {
-    // State variables for all the data - initialized based on settings
-    var dayTimeStart by remember { mutableStateOf(25200) } // 07:00:00 in seconds
-    var swimDistance by remember { mutableStateOf(3800.0) }
-    var swimTime by remember { mutableStateOf(4560) }
-    var swimPace by remember { mutableStateOf(120) }
-    var bikeDistance by remember { mutableStateOf(180.0) }
-    var bikeTime by remember { mutableStateOf(25920) }
-    var bikeSpeed by remember { mutableStateOf(25.0) }
-    var runDistance by remember { mutableStateOf(42195.0) }
-    var runTime by remember { mutableStateOf(16034) }
-    var runPace by remember { mutableStateOf(380) }
-    var t1Time by remember { mutableStateOf(120) } // 2 minutes
-    var t2Time by remember { mutableStateOf(90) } // 1.5 minutes
-
-    var preset by remember { mutableStateOf("") }
-    var presetExpanded by remember { mutableStateOf(false) }
-
-    // Define handlePresetChange function before using it
-    fun handlePresetChange(selectedPreset: String) {
-        when (selectedPreset) {
-            "sprint" -> {
-                swimDistance = 750.0
-                swimPace = 120
-                swimTime = 900
-
-                bikeDistance = 20.0
-                bikeSpeed = 25.0
-                bikeTime = 2880
-
-                runDistance = 5000.0
-                runPace = 300
-                runTime = 1500
-            }
-            "olympic" -> {
-                swimDistance = 1500.0
-                swimPace = 120
-                swimTime = 1800
-
-                bikeDistance = 40.0
-                bikeSpeed = 25.0
-                bikeTime = 5760
-
-                runDistance = 10000.0
-                runPace = 300
-                runTime = 3000
-            }
-            "md" -> {
-                swimDistance = 1900.0
-                swimPace = 120
-                swimTime = 2280
-
-                bikeDistance = 90.0
-                bikeSpeed = 25.0
-                bikeTime = 12960
-
-                runDistance = 21097.5
-                runPace = 380
-                runTime = 8017
-            }
-            "ld" -> {
-                swimDistance = 3800.0
-                swimPace = 120
-                swimTime = 4560
-
-                bikeDistance = 180.0
-                bikeSpeed = 25.0
-                bikeTime = 25920
-
-                runDistance = 42195.0
-                runPace = 380
-                runTime = 16034
-            }
-        }
-    }
-
-    // Load default distance setting on first composition
-    LaunchedEffect(Unit) {
-        val defaultDistance = SettingsRepository.getDefaultDistance()
-        handlePresetChange(defaultDistance)
-    }
-
     val presetOptions = listOf(
         "" to "Vorlagen",
         "sprint" to "Sprint",
@@ -116,35 +37,6 @@ fun PaceRechner(
         "md" to "Mitteldistanz",
         "ld" to "Langdistanz"
     )
-
-    // Calculated values
-    val totalTime = swimTime + t1Time + bikeTime + t2Time + runTime
-    val swimCumulativeTime = swimTime
-    val t1CumulativeTime = swimTime + t1Time
-    val bikeCumulativeTime = swimTime + t1Time + bikeTime
-    val t2CumulativeTime = swimTime + t1Time + bikeTime + t2Time
-
-    // Time calculations for splits
-    val bikeQuarter1Km = bikeDistance * 0.25
-    val bikeHalfKm = bikeDistance * 0.5
-    val bikeThreeQuarterKm = bikeDistance * 0.75
-    val runQuarter1Km = runDistance * 0.25 / 1000.0
-    val runHalfKm = runDistance * 0.5 / 1000.0
-    val runThreeQuarterKm = runDistance * 0.75 / 1000.0
-
-    val bike25Time = (bikeTime * 0.25).toInt()
-    val bike50Time = (bikeTime * 0.5).toInt()
-    val bike75Time = (bikeTime * 0.75).toInt()
-    val run25Time = (runTime * 0.25).toInt()
-    val run50Time = (runTime * 0.5).toInt()
-    val run75Time = (runTime * 0.75).toInt()
-
-    // Clock times
-    val totalTimeAfterSwim = dayTimeStart + swimCumulativeTime
-    val timeAfterT1 = dayTimeStart + t1CumulativeTime
-    val totalTimeAfterBike = dayTimeStart + bikeCumulativeTime
-    val timeAfterT2 = dayTimeStart + t2CumulativeTime
-    val dayTimeFinish = dayTimeStart + totalTime
 
     // Use LazyColumn to fix the scrolling issue
     LazyColumn(
@@ -169,14 +61,14 @@ fun PaceRechner(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     ExposedDropdownMenuBox(
-                        expanded = presetExpanded,
-                        onExpandedChange = { presetExpanded = it }
+                        expanded = viewModel.presetExpanded,
+                        onExpandedChange = { viewModel.updatePresetExpanded(it) }
                     ) {
                         OutlinedTextField(
-                            value = presetOptions.find { it.first == preset }?.second ?: "Vorlagen",
+                            value = presetOptions.find { it.first == viewModel.preset }?.second ?: "Vorlagen",
                             onValueChange = {},
                             readOnly = true,
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = presetExpanded) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = viewModel.presetExpanded) },
                             modifier = Modifier
                                 .menuAnchor()
                                 .width(150.dp),
@@ -187,17 +79,17 @@ fun PaceRechner(
                             )
                         )
                         ExposedDropdownMenu(
-                            expanded = presetExpanded,
-                            onDismissRequest = { presetExpanded = false }
+                            expanded = viewModel.presetExpanded,
+                            onDismissRequest = { viewModel.updatePresetExpanded(false) }
                         ) {
                             presetOptions.forEach { (value, label) ->
                                 DropdownMenuItem(
                                     text = { Text(label) },
                                     onClick = {
-                                        preset = value
-                                        presetExpanded = false
+                                        viewModel.updatePreset(value)
+                                        viewModel.updatePresetExpanded(false)
                                         if (value.isNotEmpty()) {
-                                            handlePresetChange(value)
+                                            viewModel.handlePresetChange(value)
                                         }
                                     }
                                 )
@@ -241,19 +133,19 @@ fun PaceRechner(
                                         if (saveName.isNotBlank()) {
                                             de.pierrelaub.pace_rechner.data.HistoryRepository.saveCalculation(
                                                 name = saveName,
-                                                swimDistance = swimDistance,
-                                                swimTime = swimTime,
-                                                swimPace = swimPace,
-                                                bikeDistance = bikeDistance,
-                                                bikeTime = bikeTime,
-                                                bikeSpeed = bikeSpeed,
-                                                runDistance = runDistance,
-                                                runTime = runTime,
-                                                runPace = runPace,
-                                                t1Time = t1Time,
-                                                t2Time = t2Time,
-                                                dayTimeStart = dayTimeStart,
-                                                presetType = preset
+                                                swimDistance = viewModel.swimDistance,
+                                                swimTime = viewModel.swimTime,
+                                                swimPace = viewModel.swimPace,
+                                                bikeDistance = viewModel.bikeDistance,
+                                                bikeTime = viewModel.bikeTime,
+                                                bikeSpeed = viewModel.bikeSpeed,
+                                                runDistance = viewModel.runDistance,
+                                                runTime = viewModel.runTime,
+                                                runPace = viewModel.runPace,
+                                                t1Time = viewModel.t1Time,
+                                                t2Time = viewModel.t2Time,
+                                                dayTimeStart = viewModel.dayTimeStart,
+                                                presetType = viewModel.preset
                                             )
                                             showSaveDialog = false
                                         }
@@ -285,12 +177,12 @@ fun PaceRechner(
                     title = "Swim",
                     backgroundColor = de.pierrelaub.pace_rechner.ui.theme.SwimColor,
                     textColor = de.pierrelaub.pace_rechner.ui.theme.SwimOnColor,
-                    distance = swimDistance,
-                    onDistanceChange = { swimDistance = it },
-                    time = swimTime,
-                    onTimeChange = { swimTime = it },
-                    pace = swimPace,
-                    onPaceChange = { swimPace = it },
+                    distance = viewModel.swimDistance,
+                    onDistanceChange = { viewModel.updateSwimDistance(it) },
+                    time = viewModel.swimTime,
+                    onTimeChange = { viewModel.updateSwimTime(it) },
+                    pace = viewModel.swimPace,
+                    onPaceChange = { viewModel.updateSwimPace(it) },
                     paceType = PaceType.Pace,
                     paceUnit = PaceUnit.Swim,
                     distanceUnit = DistanceUnit.Swim
@@ -306,8 +198,8 @@ fun PaceRechner(
                 title = "T1"
             ) {
                 PaceRechnerTransition(
-                    time = t1Time,
-                    onTimeChange = { t1Time = it }
+                    time = viewModel.t1Time,
+                    onTimeChange = { viewModel.updateT1Time(it) }
                 )
             }
         }
@@ -323,12 +215,12 @@ fun PaceRechner(
                     title = "Bike",
                     backgroundColor = de.pierrelaub.pace_rechner.ui.theme.BikeColor,
                     textColor = de.pierrelaub.pace_rechner.ui.theme.BikeOnColor,
-                    distance = bikeDistance,
-                    onDistanceChange = { bikeDistance = it },
-                    time = bikeTime,
-                    onTimeChange = { bikeTime = it },
-                    speed = bikeSpeed,
-                    onSpeedChange = { bikeSpeed = it },
+                    distance = viewModel.bikeDistance,
+                    onDistanceChange = { viewModel.updateBikeDistance(it) },
+                    time = viewModel.bikeTime,
+                    onTimeChange = { viewModel.updateBikeTime(it) },
+                    speed = viewModel.bikeSpeed,
+                    onSpeedChange = { viewModel.updateBikeSpeed(it) },
                     paceType = PaceType.Speed,
                     distanceUnit = DistanceUnit.Bike
                 )
@@ -343,8 +235,8 @@ fun PaceRechner(
                 title = "T2"
             ) {
                 PaceRechnerTransition(
-                    time = t2Time,
-                    onTimeChange = { t2Time = it }
+                    time = viewModel.t2Time,
+                    onTimeChange = { viewModel.updateT2Time(it) }
                 )
             }
         }
@@ -360,12 +252,12 @@ fun PaceRechner(
                     title = "Run",
                     backgroundColor = de.pierrelaub.pace_rechner.ui.theme.RunColor,
                     textColor = de.pierrelaub.pace_rechner.ui.theme.RunOnColor,
-                    distance = runDistance,
-                    onDistanceChange = { runDistance = it },
-                    time = runTime,
-                    onTimeChange = { runTime = it },
-                    pace = runPace,
-                    onPaceChange = { runPace = it },
+                    distance = viewModel.runDistance,
+                    onDistanceChange = { viewModel.updateRunDistance(it) },
+                    time = viewModel.runTime,
+                    onTimeChange = { viewModel.updateRunTime(it) },
+                    pace = viewModel.runPace,
+                    onPaceChange = { viewModel.updateRunPace(it) },
                     paceType = PaceType.Pace,
                     paceUnit = PaceUnit.Run,
                     distanceUnit = DistanceUnit.Run
@@ -376,46 +268,46 @@ fun PaceRechner(
         // Summary
         item {
             PaceRechnerSummary(
-                swimTimeString = secondsToHHMMSS(swimTime, false),
-                bikeTimeString = secondsToHHMMSS(bikeTime, false),
-                runTimeString = secondsToHHMMSS(runTime, false),
-                t1TimeString = secondsToHHMMSS(t1Time, false),
-                t2TimeString = secondsToHHMMSS(t2Time, false),
-                totalTimeString = secondsToHHMMSS(totalTime, false),
-                swimCumulativeTimeString = secondsToHHMMSS(swimCumulativeTime, false),
-                t1CumulativeTimeString = secondsToHHMMSS(t1CumulativeTime, false),
-                bikeCumulativeTimeString = secondsToHHMMSS(bikeCumulativeTime, false),
-                t2CumulativeTimeString = secondsToHHMMSS(t2CumulativeTime, false),
-                dayTimeStartString = secondsToHHMMSS(dayTimeStart, false),
-                totalTimeAfterSwimString = secondsToHHMMSS(totalTimeAfterSwim, false),
-                timeAfterT1String = secondsToHHMMSS(timeAfterT1, false),
-                totalTimeAfterBikeString = secondsToHHMMSS(totalTimeAfterBike, false),
-                timeAfterT2String = secondsToHHMMSS(timeAfterT2, false),
-                dayTimeFinish = secondsToHHMMSS(dayTimeFinish, false),
-                bikeQuarter1Km = bikeQuarter1Km,
-                bikeHalfKm = bikeHalfKm,
-                bikeThreeQuarterKm = bikeThreeQuarterKm,
-                runQuarter1Km = runQuarter1Km,
-                runHalfKm = runHalfKm,
-                runThreeQuarterKm = runThreeQuarterKm,
-                bike25TimeString = secondsToHHMMSS(bike25Time, false),
-                bike50TimeString = secondsToHHMMSS(bike50Time, false),
-                bike75TimeString = secondsToHHMMSS(bike75Time, false),
-                run25TimeString = secondsToHHMMSS(run25Time, false),
-                run50TimeString = secondsToHHMMSS(run50Time, false),
-                run75TimeString = secondsToHHMMSS(run75Time, false),
-                bike25CumulativeTimeString = secondsToHHMMSS(swimCumulativeTime + t1CumulativeTime + bike25Time, false),
-                bike50CumulativeTimeString = secondsToHHMMSS(swimCumulativeTime + t1CumulativeTime + bike50Time, false),
-                bike75CumulativeTimeString = secondsToHHMMSS(swimCumulativeTime + t1CumulativeTime + bike75Time, false),
-                run25CumulativeTimeString = secondsToHHMMSS(bikeCumulativeTime + t2CumulativeTime + run25Time, false),
-                run50CumulativeTimeString = secondsToHHMMSS(bikeCumulativeTime + t2CumulativeTime + run50Time, false),
-                run75CumulativeTimeString = secondsToHHMMSS(bikeCumulativeTime + t2CumulativeTime + run75Time, false),
-                clockTimeBike25String = secondsToHHMMSS(dayTimeStart + swimCumulativeTime + t1CumulativeTime + bike25Time, false),
-                clockTimeBike50String = secondsToHHMMSS(dayTimeStart + swimCumulativeTime + t1CumulativeTime + bike50Time, false),
-                clockTimeBike75String = secondsToHHMMSS(dayTimeStart + swimCumulativeTime + t1CumulativeTime + bike75Time, false),
-                clockTimeRun25String = secondsToHHMMSS(dayTimeStart + bikeCumulativeTime + t2CumulativeTime + run25Time, false),
-                clockTimeRun50String = secondsToHHMMSS(dayTimeStart + bikeCumulativeTime + t2CumulativeTime + run50Time, false),
-                clockTimeRun75String = secondsToHHMMSS(dayTimeStart + bikeCumulativeTime + t2CumulativeTime + run75Time, false)
+                swimTimeString = secondsToHHMMSS(viewModel.swimTime, false),
+                bikeTimeString = secondsToHHMMSS(viewModel.bikeTime, false),
+                runTimeString = secondsToHHMMSS(viewModel.runTime, false),
+                t1TimeString = secondsToHHMMSS(viewModel.t1Time, false),
+                t2TimeString = secondsToHHMMSS(viewModel.t2Time, false),
+                totalTimeString = secondsToHHMMSS(viewModel.totalTime, false),
+                swimCumulativeTimeString = secondsToHHMMSS(viewModel.swimCumulativeTime, false),
+                t1CumulativeTimeString = secondsToHHMMSS(viewModel.t1CumulativeTime, false),
+                bikeCumulativeTimeString = secondsToHHMMSS(viewModel.bikeCumulativeTime, false),
+                t2CumulativeTimeString = secondsToHHMMSS(viewModel.t2CumulativeTime, false),
+                dayTimeStartString = secondsToHHMMSS(viewModel.dayTimeStart, false),
+                totalTimeAfterSwimString = secondsToHHMMSS(viewModel.totalTimeAfterSwim, false),
+                timeAfterT1String = secondsToHHMMSS(viewModel.timeAfterT1, false),
+                totalTimeAfterBikeString = secondsToHHMMSS(viewModel.totalTimeAfterBike, false),
+                timeAfterT2String = secondsToHHMMSS(viewModel.timeAfterT2, false),
+                dayTimeFinish = secondsToHHMMSS(viewModel.dayTimeFinish, false),
+                bikeQuarter1Km = viewModel.bikeQuarter1Km,
+                bikeHalfKm = viewModel.bikeHalfKm,
+                bikeThreeQuarterKm = viewModel.bikeThreeQuarterKm,
+                runQuarter1Km = viewModel.runQuarter1Km,
+                runHalfKm = viewModel.runHalfKm,
+                runThreeQuarterKm = viewModel.runThreeQuarterKm,
+                bike25TimeString = secondsToHHMMSS(viewModel.bike25Time, false),
+                bike50TimeString = secondsToHHMMSS(viewModel.bike50Time, false),
+                bike75TimeString = secondsToHHMMSS(viewModel.bike75Time, false),
+                run25TimeString = secondsToHHMMSS(viewModel.run25Time, false),
+                run50TimeString = secondsToHHMMSS(viewModel.run50Time, false),
+                run75TimeString = secondsToHHMMSS(viewModel.run75Time, false),
+                bike25CumulativeTimeString = secondsToHHMMSS(viewModel.swimCumulativeTime + viewModel.t1CumulativeTime + viewModel.bike25Time, false),
+                bike50CumulativeTimeString = secondsToHHMMSS(viewModel.swimCumulativeTime + viewModel.t1CumulativeTime + viewModel.bike50Time, false),
+                bike75CumulativeTimeString = secondsToHHMMSS(viewModel.swimCumulativeTime + viewModel.t1CumulativeTime + viewModel.bike75Time, false),
+                run25CumulativeTimeString = secondsToHHMMSS(viewModel.bikeCumulativeTime + viewModel.t2CumulativeTime + viewModel.run25Time, false),
+                run50CumulativeTimeString = secondsToHHMMSS(viewModel.bikeCumulativeTime + viewModel.t2CumulativeTime + viewModel.run50Time, false),
+                run75CumulativeTimeString = secondsToHHMMSS(viewModel.bikeCumulativeTime + viewModel.t2CumulativeTime + viewModel.run75Time, false),
+                clockTimeBike25String = secondsToHHMMSS(viewModel.dayTimeStart + viewModel.swimCumulativeTime + viewModel.t1CumulativeTime + viewModel.bike25Time, false),
+                clockTimeBike50String = secondsToHHMMSS(viewModel.dayTimeStart + viewModel.swimCumulativeTime + viewModel.t1CumulativeTime + viewModel.bike50Time, false),
+                clockTimeBike75String = secondsToHHMMSS(viewModel.dayTimeStart + viewModel.swimCumulativeTime + viewModel.t1CumulativeTime + viewModel.bike75Time, false),
+                clockTimeRun25String = secondsToHHMMSS(viewModel.dayTimeStart + viewModel.bikeCumulativeTime + viewModel.t2CumulativeTime + viewModel.run25Time, false),
+                clockTimeRun50String = secondsToHHMMSS(viewModel.dayTimeStart + viewModel.bikeCumulativeTime + viewModel.t2CumulativeTime + viewModel.run50Time, false),
+                clockTimeRun75String = secondsToHHMMSS(viewModel.dayTimeStart + viewModel.bikeCumulativeTime + viewModel.t2CumulativeTime + viewModel.run75Time, false)
             )
         }
     }

@@ -26,7 +26,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun HistoryScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLoadCalculation: ((PaceCalculation) -> Unit)? = null
 ) {
     val calculations = HistoryRepository.calculations
 
@@ -102,7 +103,7 @@ fun HistoryScreen(
                         HistoryRepository.deleteCalculation(calculation.id)
                     },
                     onSelect = {
-                        // TODO: Load calculation back into PaceRechner
+                        onLoadCalculation?.invoke(calculation)
                     }
                 )
             }
@@ -183,21 +184,49 @@ private fun HistoryCalculationCard(
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
-                        text = "${calculation.swimDistance.toInt()}m",
-                        fontSize = 11.sp,
-                        color = de.pierrelaub.pace_rechner.ui.theme.SwimColor
-                    )
-                    Text(
-                        text = "${calculation.bikeDistance.toInt()}km",
-                        fontSize = 11.sp,
-                        color = de.pierrelaub.pace_rechner.ui.theme.BikeColor
-                    )
-                    Text(
-                        text = "${(calculation.runDistance/1000).toInt()}km",
-                        fontSize = 11.sp,
-                        color = de.pierrelaub.pace_rechner.ui.theme.RunColor
-                    )
+                    Row {
+                        Text(
+                            text = "${calculation.swimDistance.toInt()}m",
+                            fontSize = 11.sp,
+                            color = de.pierrelaub.pace_rechner.ui.theme.SwimColor
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = secondsToHHMMSS(calculation.swimTime, false),
+                            fontSize = 11.sp,
+                            color = de.pierrelaub.pace_rechner.ui.theme.SwimOnColor
+                        )
+                    }
+
+                    Row {
+                        Text(
+                            text = "${calculation.bikeDistance.toInt()}km",
+                            fontSize = 11.sp,
+                            color = de.pierrelaub.pace_rechner.ui.theme.BikeColor
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = secondsToHHMMSS(calculation.bikeTime, false),
+                            fontSize = 11.sp,
+                            color = de.pierrelaub.pace_rechner.ui.theme.BikeOnColor
+                        )
+                    }
+
+                    Row {
+                        Text(
+                            text = "${(calculation.runDistance / 1000).toInt()}km",
+                            fontSize = 11.sp,
+                            color = de.pierrelaub.pace_rechner.ui.theme.RunColor
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = secondsToHHMMSS(calculation.runTime, false),
+                            fontSize = 11.sp,
+                            color = de.pierrelaub.pace_rechner.ui.theme.RunOnColor
+                        )
+                    }
                 }
 
                 // Total time
