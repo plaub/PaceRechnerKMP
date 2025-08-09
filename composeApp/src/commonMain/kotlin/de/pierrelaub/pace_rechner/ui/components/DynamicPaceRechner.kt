@@ -68,12 +68,10 @@ fun DynamicPaceRechner(
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         ExposedDropdownMenuBox(
                             expanded = viewModel.presetExpanded,
@@ -85,8 +83,7 @@ fun DynamicPaceRechner(
                                 readOnly = true,
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = viewModel.presetExpanded) },
                                 modifier = Modifier
-                                    .menuAnchor()
-                                    .width(200.dp),
+                                    .menuAnchor(),
                                 shape = RoundedCornerShape(16.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,

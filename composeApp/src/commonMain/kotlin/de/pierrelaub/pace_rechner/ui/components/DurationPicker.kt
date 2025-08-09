@@ -77,7 +77,7 @@ fun DurationPicker(
             text = ":",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.background
         )
 
         // Minutes
@@ -98,7 +98,7 @@ fun DurationPicker(
             text = ":",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.background
         )
 
         // Seconds
