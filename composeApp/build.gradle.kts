@@ -68,6 +68,8 @@ kotlin {
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
             implementation(libs.kotlinx.datetime)
             implementation(compose.materialIconsExtended)
+            implementation(libs.voyager.navigator)
+            implementation(libs.voyager.tab.navigator)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

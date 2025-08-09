@@ -8,7 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import de.pierrelaub.pace_rechner.data.InitializeSettings
 import de.pierrelaub.pace_rechner.data.SettingsRepository
-import de.pierrelaub.pace_rechner.ui.navigation.MainNavigation
+import de.pierrelaub.pace_rechner.ui.navigation.voyager.VoyagerMainNavigation
 import de.pierrelaub.pace_rechner.ui.theme.PaceRechnerTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -27,7 +27,7 @@ fun App() {
                 .fillMaxSize()
                 .safeContentPadding()
         ) {
-            MainNavigation(
+            VoyagerMainNavigation(
                 modifier = Modifier.fillMaxSize()
             )
         }
