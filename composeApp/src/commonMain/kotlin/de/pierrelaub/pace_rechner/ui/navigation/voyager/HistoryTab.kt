@@ -46,32 +46,3 @@ class HistoryTabWithViewModel(
         return HistoryTabWithViewModel::class.hashCode()
     }
 }
-
-// Behalte das alte Object für Kompatibilität
-object HistoryTab : Tab {
-    @Composable
-    override fun Content() {
-        val tabNavigator = LocalTabNavigator.current
-        val sharedViewModel = rememberSharedViewModel()
-
-        HistoryScreen(
-            onLoadCalculation = { calculation ->
-                // Lade die Berechnung ins geteilte ViewModel
-                sharedViewModel.loadCalculation(calculation)
-                // Wechsle zum PaceRechner-Tab
-                tabNavigator.current = PaceRechnerTab
-            }
-        )
-    }
-
-    override val options: TabOptions
-        @Composable
-        get() {
-            val strings = LocalizedStrings()
-            return TabOptions(
-                index = 1u,
-                title = strings.history,
-                icon = null
-            )
-        }
-}

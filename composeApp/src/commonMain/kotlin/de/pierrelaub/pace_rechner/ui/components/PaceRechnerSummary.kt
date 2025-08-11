@@ -140,15 +140,6 @@ private fun getSportDisplayName(
     }
 }
 
-private fun shouldShowSplitTimes(sportsType: SportsType): Boolean {
-    // Show split times for longer distance activities
-    return when (sportsType) {
-        SportsType.Bike, SportsType.Run, SportsType.Rowing -> true
-        SportsType.Swim -> true // Could be made conditional based on distance
-        SportsType.Hiking, SportsType.Walking -> true
-    }
-}
-
 @Composable
 private fun SummarySection(
     title: String,

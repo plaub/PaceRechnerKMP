@@ -2,6 +2,7 @@ package de.pierrelaub.pace_rechner.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit // Import the KTX extension
 
 class AndroidSettingsStorage(context: Context) : SettingsStorage {
     private val preferences: SharedPreferences = context.getSharedPreferences(
@@ -14,7 +15,9 @@ class AndroidSettingsStorage(context: Context) : SettingsStorage {
     }
 
     override fun putString(key: String, value: String) {
-        preferences.edit().putString(key, value).apply()
+        preferences.edit { // Use the KTX extension
+            putString(key, value)
+        }
     }
 
     override fun getInt(key: String, defaultValue: Int): Int {
@@ -22,7 +25,9 @@ class AndroidSettingsStorage(context: Context) : SettingsStorage {
     }
 
     override fun putInt(key: String, value: Int) {
-        preferences.edit().putInt(key, value).apply()
+        preferences.edit { // Use the KTX extension
+            putInt(key, value)
+        }
     }
 
     override fun getBoolean(key: String, defaultValue: Boolean): Boolean {
@@ -30,6 +35,8 @@ class AndroidSettingsStorage(context: Context) : SettingsStorage {
     }
 
     override fun putBoolean(key: String, value: Boolean) {
-        preferences.edit().putBoolean(key, value).apply()
+        preferences.edit { // Use the KTX extension
+            putBoolean(key, value)
+        }
     }
 }

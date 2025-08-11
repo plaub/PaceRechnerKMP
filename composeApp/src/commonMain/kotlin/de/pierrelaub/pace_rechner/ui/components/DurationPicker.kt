@@ -140,7 +140,7 @@ private fun TimePickerDropdown(
             // Icon komplett entfernt für bessere Lesbarkeit
             trailingIcon = null,
             modifier = Modifier
-                .menuAnchor()
+                .menuAnchor(MenuAnchorType.PrimaryEditable, enabled = !disabled)
                 .width(56.dp)
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),

@@ -40,9 +40,7 @@ fun SettingsScreen(
     val competitionTypeOptions = CompetitionType.entries.map { it to getCompetitionTypeDisplayName(it, strings) }
 
     // Distance options based on selected competition type
-    val distanceOptions = if (selectedCompetitionType.getAvailablePresets().isNotEmpty()) {
-        selectedCompetitionType.getAvailablePresets()
-    } else {
+    val distanceOptions = selectedCompetitionType.getAvailablePresets().ifEmpty {
         listOf("" to strings.noPresetsAvailable)
     }
 

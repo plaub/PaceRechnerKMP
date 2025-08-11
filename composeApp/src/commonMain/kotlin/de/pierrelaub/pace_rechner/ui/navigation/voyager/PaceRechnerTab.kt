@@ -33,23 +33,3 @@ class PaceRechnerTabWithViewModel(private val viewModel: PaceRechnerViewModel) :
         return PaceRechnerTabWithViewModel::class.hashCode()
     }
 }
-
-// Behalte das alte Object für Kompatibilität
-object PaceRechnerTab : Tab {
-    @Composable
-    override fun Content() {
-        val viewModel = rememberSharedViewModel()
-        PaceRechnerScreen(viewModel = viewModel)
-    }
-
-    override val options: TabOptions
-        @Composable
-        get() {
-            val strings = LocalizedStrings()
-            return TabOptions(
-                index = 0u,
-                title = strings.calculator,
-                icon = null
-            )
-        }
-}

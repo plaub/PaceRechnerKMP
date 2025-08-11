@@ -7,12 +7,12 @@ Ein intuitiver und moderner Pace-Kalkulator, entwickelt mit Kotlin Multiplatform
 *   **Pace berechnen:** Gib Distanz und Zeit ein, um deine Pace (z.B. min/km) zu ermitteln.
 *   **Zeit berechnen:** Gib Distanz und Pace (oder Geschwindigkeit) ein, um die benötigte Zeit zu kalkulieren.
 *   **Distanz berechnen:** Gib Zeit und Pace (oder Geschwindigkeit) ein, um die mögliche Distanz zu erfahren.
-*   **Unterstützung für verschiedene Einheiten:**
+*   **Flexible Einheiten:**
     *   Distanz: Kilometer (km), Meilen (mi)
     *   Pace: Minuten pro Kilometer (min/km), Minuten pro Meile (min/mi)
-    *   Geschwindigkeit: Kilometer pro Stunde (km/h), Meilen pro Stunde (mph) (zukünftig)
-*   **Benutzerfreundliche Oberfläche:** Klare Eingabefelder und eine ansprechende Darstellung dank Compose Multiplatform.
-*   **Flexibel:** Einfache Anpassung für verschiedene Sportarten (Laufen, Radfahren etc.).
+    *   Geschwindigkeit: Kilometer pro Stunde (km/h), Meilen pro Stunde (mph) (Implementierung geplant)
+*   **Intuitive Benutzeroberfläche:** Klare Eingabefelder und eine ansprechende Darstellung dank Compose Multiplatform.
+*   **Anpassbar:** Einfache Adaption für verschiedene Sportarten (Laufen, Radfahren, Schwimmen etc.).
 
 ## 📱 Unterstützte Plattformen
 
@@ -22,36 +22,34 @@ Ein intuitiver und moderner Pace-Kalkulator, entwickelt mit Kotlin Multiplatform
 
 ## 🛠️ Tech Stack
 
-*   **Kotlin Multiplatform:** Für die gemeinsame Logik auf allen Plattformen.
-*   **Compose Multiplatform:** Für eine moderne, deklarative UI, die auf Android, iOS und Web geteilt wird.
+*   **Kotlin Multiplatform:** Für die gemeinsame Codebasis und Logik.
+*   **Compose Multiplatform:** Für eine moderne, deklarative UI auf allen Plattformen.
 *   **Material 3 Design:** Für ein zeitgemäßes Look-and-Feel.
 
 ## 🚀 Loslegen
 
-Du kannst das Projekt direkt in Android Studio öffnen.
+Das Projekt kann direkt in Android Studio geöffnet und ausgeführt werden.
 
 *   **Android:** Wähle das `composeApp`-Modul aus und starte es auf einem Android-Emulator oder einem physischen Gerät.
 *   **iOS:**
-    *   In Android Studio: Wähle ein iOS-Ziel (z.B. `iosApp`) aus der Konfigurationsliste und starte es auf einem Simulator oder einem verbundenen Gerät.
-    *   Alternativ: Öffne die Datei `iosApp/iosApp.xcworkspace` in Xcode und baue/starte die App von dort.
+    *   **Android Studio:** Wähle ein iOS-Ziel (z.B. `iosApp`) aus der Konfigurationsliste und starte es auf einem Simulator oder einem verbundenen Gerät.
+    *   **Xcode:** Öffne die Datei `iosApp/iosApp.xcworkspace` in Xcode und baue/starte die App von dort.
 *   **Web (Wasm):**
     1.  Öffne das Gradle-Toolfenster in Android Studio.
-    2.  Führe den Task `:composeApp:wasmJsBrowserDevelopmentRun` aus.
+    2.  Führe den Task `:composeApp:wasmJsBrowserDevelopmentRun` unter `composeApp > Tasks > wasmJs` aus.
     3.  Öffne die im Terminal angezeigte URL (standardmäßig `http://localhost:8080`) in deinem Browser.
 
-## 📂 Projektstruktur (Kurzübersicht)
+## 📂 Projektstruktur
 
-*   `./composeApp`: Enthält den Großteil des Codes.
-    *   `src/commonMain/kotlin`: Hier liegt die geteilte Logik (Berechnungen, ViewModels) und die Compose UI, die auf allen Plattformen verwendet wird.
-    *   `src/androidMain/kotlin`: Android-spezifischer Code (falls nötig).
-    *   `src/iosMain/kotlin`: iOS-spezifischer Code (falls nötig).
-    *   `src/wasmJsMain/kotlin`: WebAssembly-spezifischer Code (falls nötig).
+*   `./composeApp`: Enthält den Hauptteil des Codes.
+    *   `src/commonMain/kotlin`: Geteilte Logik (Berechnungen, ViewModels) und die gemeinsame Compose UI.
+    *   `src/androidMain/kotlin`: Android-spezifischer Code.
+    *   `src/iosMain/kotlin`: iOS-spezifischer Code.
+    *   `src/wasmJsMain/kotlin`: WebAssembly-spezifischer Code.
 *   `./iosApp`: Das Xcode-Projekt für die iOS-App.
 
-## 🤝 Feedback & Mitwirkung
+## 🤝 Mitwirken & Feedback
 
-Feedback ist immer willkommen! Wenn du Ideen hast oder Fehler findest, erstelle gerne ein Issue.
-
----
+Wir freuen uns über Feedback und Beiträge! Wenn du Ideen zur Verbesserung hast, Fehler findest oder mitwirken möchtest, erstelle bitte ein Issue im GitHub Repository.
 
 Viel Spaß beim Kalkulieren deiner nächsten Bestzeit!

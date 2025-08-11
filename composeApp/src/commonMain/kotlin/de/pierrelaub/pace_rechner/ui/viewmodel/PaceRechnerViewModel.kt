@@ -187,10 +187,6 @@ class PaceRechnerViewModel {
     }
 
     // Update-Funktionen
-    fun updateDayTimeStart(value: Int) {
-        dayTimeStart = value
-    }
-
     fun updatePreset(value: String) {
         preset = value
     }
@@ -234,32 +230,6 @@ class PaceRechnerViewModel {
         transitionTimes = newTransitions
     }
 
-    fun addActivity(activity: SportActivity) {
-        activities = activities + activity
-    }
-
-    fun removeActivity(index: Int) {
-        if (index < activities.size) {
-            activities = activities.filterIndexed { i, _ -> i != index }
-        }
-    }
-
-    // Backward compatibility - einzelne Update-Funktionen
-    fun updateSwimDistance(value: Double) = updateActivityDistance(0, value)
-    fun updateSwimTime(value: Int) = updateActivityTime(0, value)
-    fun updateSwimPace(value: Int) = updateActivityPaceOrSpeed(0, value.toDouble())
-
-    fun updateBikeDistance(value: Double) = updateActivityDistance(1, value)
-    fun updateBikeTime(value: Int) = updateActivityTime(1, value)
-    fun updateBikeSpeed(value: Double) = updateActivityPaceOrSpeed(1, value)
-
-    fun updateRunDistance(value: Double) = updateActivityDistance(2, value)
-    fun updateRunTime(value: Int) = updateActivityTime(2, value)
-    fun updateRunPace(value: Int) = updateActivityPaceOrSpeed(2, value.toDouble())
-
-    fun updateT1Time(value: Int) = updateTransitionTime(0, value)
-    fun updateT2Time(value: Int) = updateTransitionTime(1, value)
-
     // Load calculation from PaceCalculation object
     fun loadCalculation(calculation: PaceCalculation) {
         dayTimeStart = calculation.dayTimeStart
@@ -272,55 +242,9 @@ class PaceRechnerViewModel {
         preset = calculation.presetType
     }
 
-    // Backward compatibility - Getter für bestehende Properties
-    val swimDistance: Double
-        get() = activities.getOrNull(0)?.distance ?: 0.0
-
-    val swimTime: Int
-        get() = activities.getOrNull(0)?.time ?: 0
-
-    val swimPace: Int
-        get() = activities.getOrNull(0)?.paceOrSpeed?.toInt() ?: 0
-
-    val bikeDistance: Double
-        get() = activities.getOrNull(1)?.distance ?: 0.0
-
-    val bikeTime: Int
-        get() = activities.getOrNull(1)?.time ?: 0
-
-    val bikeSpeed: Double
-        get() = activities.getOrNull(1)?.paceOrSpeed ?: 0.0
-
-    val runDistance: Double
-        get() = activities.getOrNull(2)?.distance ?: 0.0
-
-    val runTime: Int
-        get() = activities.getOrNull(2)?.time ?: 0
-
-    val runPace: Int
-        get() = activities.getOrNull(2)?.paceOrSpeed?.toInt() ?: 0
-
-    val t1Time: Int
-        get() = transitionTimes[0] ?: 0
-
-    val t2Time: Int
-        get() = transitionTimes[1] ?: 0
-
     // Berechnete Werte
     val totalTime: Int
         get() = activities.sumOf { it.time } + transitionTimes.values.sum()
-
-    val swimCumulativeTime: Int
-        get() = getCumulativeTime(0)
-
-    val t1CumulativeTime: Int
-        get() = getCumulativeTime(0) + t1Time
-
-    val bikeCumulativeTime: Int
-        get() = getCumulativeTime(1) + t1Time
-
-    val t2CumulativeTime: Int
-        get() = getCumulativeTime(1) + t1Time + t2Time
 
     fun getCumulativeTime(upToIndex: Int): Int {
         var cumulative = 0
@@ -343,55 +267,6 @@ class PaceRechnerViewModel {
     }
 
     // Split-Berechnungen
-    val bikeQuarter1Km: Double
-        get() = bikeDistance * 0.25
-
-    val bikeHalfKm: Double
-        get() = bikeDistance * 0.5
-
-    val bikeThreeQuarterKm: Double
-        get() = bikeDistance * 0.75
-
-    val runQuarter1Km: Double
-        get() = runDistance * 0.25 / 1000.0
-
-    val runHalfKm: Double
-        get() = runDistance * 0.5 / 1000.0
-
-    val runThreeQuarterKm: Double
-        get() = runDistance * 0.75 / 1000.0
-
-    val bike25Time: Int
-        get() = (bikeTime * 0.25).toInt()
-
-    val bike50Time: Int
-        get() = (bikeTime * 0.5).toInt()
-
-    val bike75Time: Int
-        get() = (bikeTime * 0.75).toInt()
-
-    val run25Time: Int
-        get() = (runTime * 0.25).toInt()
-
-    val run50Time: Int
-        get() = (runTime * 0.5).toInt()
-
-    val run75Time: Int
-        get() = (runTime * 0.75).toInt()
-
-    // Clock times
-    val totalTimeAfterSwim: Int
-        get() = dayTimeStart + swimCumulativeTime
-
-    val timeAfterT1: Int
-        get() = dayTimeStart + t1CumulativeTime
-
-    val totalTimeAfterBike: Int
-        get() = dayTimeStart + bikeCumulativeTime
-
-    val timeAfterT2: Int
-        get() = dayTimeStart + t2CumulativeTime
-
     val dayTimeFinish: Int
         get() = dayTimeStart + totalTime
 }

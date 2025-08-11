@@ -5,8 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,21 +38,21 @@ fun AppWithSystemUI() {
     LaunchedEffect(isDarkTheme) {
         if (!view.isInEditMode) {
             val window = (view.context as ComponentActivity).window
+            val insetsController = WindowCompat.getInsetsController(window, view)
+
+            // Ensure content draws behind system bars
+            WindowCompat.setDecorFitsSystemWindows(window, false)
 
             if (isDarkTheme) {
-                // Set dark colors
-                window.statusBarColor = Color.Transparent.toArgb()
-                window.navigationBarColor = Color.Transparent.toArgb()
-                WindowCompat.setDecorFitsSystemWindows(window, false)
-                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
-                WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = false
+                // System bars are transparent for edge-to-edge.
+                // Set icon colors for dark theme
+                insetsController.isAppearanceLightStatusBars = false
+                insetsController.isAppearanceLightNavigationBars = false
             } else {
-                // Set light colors
-                window.statusBarColor = Color.Transparent.toArgb()
-                window.navigationBarColor = Color.Transparent.toArgb()
-                WindowCompat.setDecorFitsSystemWindows(window, false)
-                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
-                WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = true
+                // System bars are transparent for edge-to-edge.
+                // Set icon colors for light theme
+                insetsController.isAppearanceLightStatusBars = true
+                insetsController.isAppearanceLightNavigationBars = true
             }
         }
     }
